@@ -286,7 +286,7 @@ You are provided a financial document — `data/annual_report.pdf`, the FY2023 a
 
 1. Upload `data/annual_report.pdf` to a Unity Catalog volume (e.g. `/Volumes/main/default/pa4/`) and parse it with `ai_parse_document`.
 2. Chunk the parsed output with `ai_prep_search` into a Delta table (columns `chunk_id`, `chunk_to_retrieve`, `chunk_to_embed`, plus `source`/`page` metadata).
-3. Create a **STANDARD** Vector Search endpoint and a **Delta Sync index** with managed embeddings (`pipeline_type="TRIGGERED"`, `primary_key="chunk_id"`, `embedding_source_column="chunk_to_retrieve"`, `embedding_model_endpoint_name=$EMBEDDINGS_ENDPOINT`).
+3. Create a **STANDARD** Vector Search endpoint and a **Delta Sync index** with managed embeddings (`pipeline_type="TRIGGERED"`, `primary_key="chunk_id"`, `embedding_source_column="chunk_to_embed"`, `embedding_model_endpoint_name=$EMBEDDINGS_ENDPOINT`).
 4. Verify the index reaches `READY` and answers a similarity-search test query.
 
 **Reference:** PA2 Part 1 (Vector Search walkthrough) and `wk5_langgraph/8.langgraph_rag/` for the LangGraph + retriever wiring pattern (adapt its pgvector retriever to `DatabricksVectorSearch`).
@@ -965,3 +965,156 @@ Name your submission: `<roll_number>_pa4.zip`
 | MCP tool integration | `wk4_langchain_agents_mcp/` |
 | Standalone MCP server on Databricks (Bonus C) | `wk4_langchain_agents_mcp/` (MCP transports) + Databricks Apps docs |
 | RAG ingestion & Vector Search retrieval | PA2 Part 1 (Databricks Vector Search) |
+
+---
+
+## Student Implementation and Written Analysis
+
+### Running the completed system
+
+Install the development environment with `uv sync --extra dev`. Upload
+`data/annual_report.pdf` to a Unity Catalog volume and call
+`rag.ingest.ingest(spark, volume_path)` from a Databricks notebook. The ingestion pipeline
+parses and chunks the document, writes the configured Delta table, enables Change Data Feed,
+creates or synchronizes the triggered Vector Search index, and waits for it to become ready.
+
+Run `pa4.ipynb` for the graph visualization, retrieval-only, calculation-only, combined-query,
+execution-trace, deployed-endpoint, latency, and client demonstrations. The offline quality gate
+is:
+
+```bash
+uv run ruff check agent client rag deployment tests config.py
+uv run pytest -q
+```
+
+Deploy the manual MLflow path with `uv run python deployment/deploy.py`. The script logs the
+models-from-code graph with its local packages, registers a Unity Catalog version, creates or
+updates the configured serving endpoint, waits for `READY`, and prints the model version and
+endpoint URL. Credentials are stored in the configured Databricks secret scope rather than the
+model artifact.
+
+### Verified deployment evidence
+
+- Manual endpoint `pa4-document-analyst` is `READY` and serves Unity Catalog model
+  `cs4603.pa4.pa4_document_analyst` version 6.
+- The saved notebook contains an HTTP 200 response from a real `curl` invocation. The request
+  that woke the scaled-to-zero endpoint took 42.289 seconds; subsequent warm requests took
+  4.442, 7.671, and 11.408 seconds.
+- The deployed endpoint answered the retrieval-only, calculation-only, and combined queries.
+  Local and deployed wording differed on two answers, while the retrieved figures, units, and
+  calculations agreed.
+- The Bonus B Agent Framework deployment is `READY` on
+  `agents_cs4603-pa4-pa4_document_analyst`, serving version 9 with a standardized ChatAgent
+  signature and an auto-generated Review App.
+- The Bonus C Databricks App `cs4603-mcp-tools` deployed successfully as a standalone HTTPS MCP
+  service. Its URL is configured through `MCP_SERVER_URL`, with stdio retained as the Part 1
+  fallback.
+
+### Task 1.2 — Planner
+
+1. Dependent steps are ordered in `plan`. Each specialist appends its output to
+   `step_results`; the MCP node receives earlier results in its prompt, so a later calculation
+   can use a value retrieved by an earlier step. Dependencies remain textual rather than typed,
+   so ambiguous units or several similar values can still cause errors.
+2. Replanning could recover when retrieval returns “not found” or an unexpected unit, but it
+   adds latency, cost, and possible plan drift. For this small fixed report, executing the
+   original 2–5 step plan is preferable. Replanning would help if “find operating margin” failed
+   and the system needed separate operating-income and revenue retrieval steps.
+
+### Task 1.3 — Supervisor
+
+1. Misrouting a lookup to MCP produces missing or invented tool arguments; misrouting arithmetic
+   to RAG normally produces “not found.” Route traces, tool validation, empty retrieval checks,
+   and result-type checks expose the problem. Recovery can retry once with the other specialist
+   or use a validator to reclassify the failed step.
+2. A ReAct agent is simpler for open-ended tasks with few tools. The supervisor is worthwhile
+   when workflows repeatedly mix retrieval and calculation because routing is observable,
+   specialist prompts are narrower, deterministic math is enforced, and each path can be
+   evaluated independently.
+
+### Task 1.4 — RAG Agent
+
+1. Retrieving for an atomic step removes unrelated clauses and generally improves embedding
+   similarity—for example, revenue retrieval is not diluted by CAGR wording. It can lose useful
+   company, year, or unit context if the planner makes the step too terse.
+2. Rewrite vague steps with entities and constraints from the original question and prior
+   results, such as “Meridian Motor Corporation FY2023 consolidated net revenue, Japanese yen.”
+   Query expansion, metadata filters, hybrid search, and reranking are further improvements.
+
+### Task 2.1 — Model Definition
+
+1. Models-from-code reconstructs the graph inside a clean serving container. Laptop-only
+   modules, files, processes, and databases do not exist there. The model definition and
+   `code_paths` therefore ship all local code, while external dependencies use stable service
+   endpoints and environment configuration.
+2. An external Vector Search index remains fresh and keeps the artifact and cold start small,
+   but adds network latency, authentication, quotas, and another availability dependency. A
+   baked corpus is self-contained and can be faster, but enlarges the artifact and requires a
+   new model version whenever documents change.
+
+### Task 2.3 — Serving Endpoint
+
+1. Authentication for invoking the endpoint is separate from credentials used by code running
+   inside its container. The graph makes outbound LLM, Vector Search, and optional remote MCP
+   calls, so the serving process needs explicit credentials or a supported service identity.
+2. Databricks provisions the new served entity and transitions traffic after it is ready.
+   Existing requests continue on the prior replica while new traffic moves to the new entity.
+   Waiting for readiness avoids routing to an uninitialized version, though clients should
+   still retry transient 503 responses.
+
+### Task 3.2 — Client
+
+1. Exponential backoff reduces synchronized retry storms and gives a rate-limited or scaling
+   endpoint progressively more time to recover. Fixed retries can repeatedly hit the same busy
+   interval.
+2. Excessive retries multiply traffic, cost, queueing, and visible latency during an outage and
+   can prevent recovery. Production clients should cap attempts and elapsed time and normally
+   add jitter and circuit breaking.
+3. `ask_streaming()` is useful when perceived latency matters, such as progressively rendering
+   a financial explanation in a chat UI. `ask()` is simpler for scripts that need one complete
+   value. A models-from-code endpoint may legitimately return the entire answer as one chunk.
+
+### Bonus A — CI/CD
+
+Deployment only runs from `main` because it is the reviewed source of truth; feature branches
+must not mutate production. A production evaluation gate would run a versioned held-out set,
+compare groundedness, numerical accuracy, latency, and safety against the current endpoint, and
+reject regressions before deployment.
+
+### Bonus B — `databricks-agents`
+
+`agents.deploy()` reduces manual provisioning and automatically supplies the endpoint and Review
+App, while the manual SDK path offers more direct control over endpoint configuration and secret
+wiring. Human ratings should be joined with traces, categorized by retrieval, routing, or
+calculation failure, added to a versioned evaluation set, and used to improve prompts or
+retrieval before the next candidate passes the offline gate.
+
+#### Verified Bonus B evidence (13 July 2026)
+
+- Agent Framework endpoint: `agents_cs4603-pa4-pa4_document_analyst`
+- Deployed Unity Catalog model: `cs4603.pa4.pa4_document_analyst`, version `12`
+- Endpoint task and state: `agent/v2/chat`, `DEPLOYMENT_READY`
+- [Auto-generated Review App](https://dbc-01190470-5ed4.cloud.databricks.com/ml/review-v2/4f6c042eb90f4136a0e16b6de0b00488/chat)
+- [MLflow experiment](https://dbc-01190470-5ed4.cloud.databricks.com/ml/experiments/1306660282575833)
+
+Three representative queries returned HTTP 200 from served model
+`cs4603-pa4-pa4_document_analyst_12`. Their persisted experiment traces were reviewed and given
+positive human ratings:
+
+| Query type | Verified result | MLflow trace | Feedback |
+|---|---|---|---|
+| Retrieval | FY2023 net income was ¥1,107 billion, cited to `annual_report.pdf`, p.4 | `tr-7c56786093e210b3b5ac365cd8773f5f` | `user_rating = 1.0` (`HUMAN`) |
+| Calculation | 15% of 2.4 billion = 360 million | `tr-c7370aee42cb30cc592233be524402a0` | `user_rating = 1.0` (`HUMAN`) |
+| Combined | FY2023 revenue ¥16,910 billion; after a 10% increase, ¥18,601 billion | `tr-a729247b35812c589b41254e1c5cfe49` | `user_rating = 1.0` (`HUMAN`) |
+
+An MLflow read-back confirmed all three traces have `TraceStatus.OK` and one persisted
+`user_rating` assessment with source type `HUMAN`.
+
+### Bonus C — Standalone MCP service
+
+A remote MCP service provides independent scaling, releases, access policy, and monitoring, but
+introduces network, authentication, latency, and availability failures. It should use Databricks
+App authentication, least-privilege service identities, authorization checks, and private
+networking where available. Bundling is preferable for a small stable toolset and atomic
+deployment; a separate service is worthwhile when several agents share tools or the tools need
+independent scaling.

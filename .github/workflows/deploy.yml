@@ -1,6 +1,6 @@
 # Bonus A — CI/CD pipeline (.github/workflows/deploy.yml)
 #
-# TODO: Implement a lint -> test -> deploy workflow.
+# Implements a lint -> test -> deploy workflow.
 #   - lint:   ruff check on agent/ and client/
 #   - test:   a smoke test that imports and compiles the graph
 #   - deploy: ONLY on push to main; log the model, register a new UC version,
@@ -20,7 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # TODO: install uv, sync deps, run `ruff check` and the smoke test
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --extra dev
+      - run: uv run ruff check agent client rag deployment tests config.py
+      - run: uv run pytest -q
 
   deploy:
     needs: lint-and-test
@@ -28,4 +31,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # TODO: install deps and run `python deployment/deploy.py` with secrets
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync
+      - run: uv run python deployment/deploy.py
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_MODEL: ${{ secrets.DATABRICKS_MODEL }}
+          UC_CATALOG: ${{ vars.UC_CATALOG }}
+          UC_SCHEMA: ${{ vars.UC_SCHEMA }}
+          VECTOR_SEARCH_ENDPOINT: ${{ vars.VECTOR_SEARCH_ENDPOINT }}
+          VECTOR_SEARCH_INDEX: ${{ vars.VECTOR_SEARCH_INDEX }}
+          EMBEDDINGS_ENDPOINT: ${{ vars.EMBEDDINGS_ENDPOINT }}
+          SERVING_ENDPOINT_NAME: ${{ vars.SERVING_ENDPOINT_NAME }}
+          SECRET_SCOPE: ${{ vars.SECRET_SCOPE }}
+          MCP_SERVER_URL: ${{ vars.MCP_SERVER_URL }}
