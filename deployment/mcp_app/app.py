@@ -16,5 +16,9 @@ if __name__ == "__main__":
     # enforced by the Databricks Apps reverse proxy.
     mcp.settings.host = "0.0.0.0"
     mcp.settings.port = int(os.environ.get("DATABRICKS_APP_PORT", "8000"))
+    # Databricks Apps only applies bearer-token API authentication to routes
+    # below /api. Keep FastMCP's streamable HTTP protocol on that protected
+    # prefix so headless agents can call it with an OAuth token.
+    mcp.settings.streamable_http_path = "/api/mcp"
     mcp.settings.transport_security.enable_dns_rebinding_protection = False
     mcp.run(transport="streamable-http")

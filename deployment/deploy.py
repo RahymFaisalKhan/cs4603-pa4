@@ -47,7 +47,10 @@ def ensure_deployment_secrets(client: WorkspaceClient, scope: str) -> None:
         )
 
     existing_keys = {item.key for item in client.secrets.list_secrets(scope)}
-    missing = set(DEPLOYMENT_SECRET_KEYS) - existing_keys
+    required_keys = set(DEPLOYMENT_SECRET_KEYS)
+    if os.environ.get("MCP_SERVER_URL", "").strip():
+        required_keys.update({"MCP_CLIENT_ID", "MCP_CLIENT_SECRET"})
+    missing = required_keys - existing_keys
     if missing:
         raise RuntimeError(
             f"Secret scope {scope!r} is missing keys: {sorted(missing)}"
@@ -75,21 +78,32 @@ def log_and_register():
         "databricks-vectorsearch>=0.40",
         "mcp>=1.0.0",
         "langchain-mcp-adapters>=0.0.5",
+        "httpx>=0.27.0",
         "python-dotenv>=1.0.0",
     ]
-    with mlflow.start_run():
-        info = mlflow.langchain.log_model(
-            lc_model=str(ROOT / "deployment" / "agent_model.py"),
-            name="agent",
-            code_paths=[
-                str(ROOT / "agent"),
-                str(ROOT / "rag"),
-                str(ROOT / "tools"),
-                str(ROOT / "config.py"),
-            ],
-            pip_requirements=requirements,
-            input_example={"messages": [{"role": "user", "content": "What was revenue?"}]},
-        )
+    # Model packaging validates the graph in the CI process, where the serving
+    # endpoint's M2M secrets are intentionally unavailable. Package using the
+    # stdio fallback, then restore the remote URL for the endpoint configuration.
+    mcp_server_url = os.environ.pop("MCP_SERVER_URL", None)
+    try:
+        with mlflow.start_run():
+            info = mlflow.langchain.log_model(
+                lc_model=str(ROOT / "deployment" / "agent_model.py"),
+                name="agent",
+                code_paths=[
+                    str(ROOT / "agent"),
+                    str(ROOT / "rag"),
+                    str(ROOT / "tools"),
+                    str(ROOT / "config.py"),
+                ],
+                pip_requirements=requirements,
+                input_example={
+                    "messages": [{"role": "user", "content": "What was revenue?"}]
+                },
+            )
+    finally:
+        if mcp_server_url is not None:
+            os.environ["MCP_SERVER_URL"] = mcp_server_url
     registered = mlflow.register_model(info.model_uri, uc_name)
     print(f"Registered {uc_name} version {registered.version}")
     return uc_name, str(registered.version)
@@ -116,6 +130,12 @@ def create_or_update_endpoint(uc_name: str, version: str) -> str:
     # deployed Databricks App instead of starting the bundled stdio process.
     if mcp_server_url := os.environ.get("MCP_SERVER_URL", "").strip():
         environment_vars["MCP_SERVER_URL"] = mcp_server_url.rstrip("/")
+        environment_vars["MCP_CLIENT_ID"] = (
+            f"{{{{secrets/{scope}/MCP_CLIENT_ID}}}}"
+        )
+        environment_vars["MCP_CLIENT_SECRET"] = (
+            f"{{{{secrets/{scope}/MCP_CLIENT_SECRET}}}}"
+        )
 
     entity = ServedEntityInput(
         name=f"{endpoint_name}-{version}",

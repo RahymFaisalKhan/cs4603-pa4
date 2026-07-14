@@ -6,9 +6,11 @@ import asyncio
 import os
 import sys
 import threading
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+import httpx
 from langchain_core.messages import HumanMessage
 from langgraph.graph import END, START, StateGraph
 
@@ -75,6 +77,36 @@ def _configure_mcp_stdio_stderr():
     mcp_sessions.stdio_client = stdio_client_with_os_stderr
 
 
+class _DatabricksOAuth(httpx.Auth):
+    """Refresh Databricks M2M OAuth tokens used by the remote MCP transport."""
+
+    def __init__(self, host: str, client_id: str, client_secret: str) -> None:
+        self.token_url = f"{host.rstrip('/')}/oidc/v1/token"
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.access_token = ""
+        self.expires_at = 0.0
+
+    def _token(self) -> str:
+        if self.access_token and time.monotonic() < self.expires_at - 60:
+            return self.access_token
+        response = httpx.post(
+            self.token_url,
+            data={"grant_type": "client_credentials", "scope": "all-apis"},
+            auth=(self.client_id, self.client_secret),
+            timeout=30,
+        )
+        response.raise_for_status()
+        payload = response.json()
+        self.access_token = payload["access_token"]
+        self.expires_at = time.monotonic() + float(payload.get("expires_in", 3600))
+        return self.access_token
+
+    def auth_flow(self, request):
+        request.headers["Authorization"] = f"Bearer {self._token()}"
+        yield request
+
+
 def load_mcp_tools(server_path: str | None = None):
     # Databricks Model Serving replaces sys.stderr with MLflow's
     # StreamToLogger, which has no fileno(). Configure the MCP stdio transport
@@ -83,13 +115,22 @@ def load_mcp_tools(server_path: str | None = None):
     path = Path(server_path) if server_path else root / "tools" / "mcp_server.py"
     url = os.environ.get("MCP_SERVER_URL")
     if url:
+        client_id = os.environ.get("MCP_CLIENT_ID")
+        client_secret = os.environ.get("MCP_CLIENT_SECRET")
         config = {
             "analyst": {
                 "url": f"{url.rstrip('/')}/mcp",
                 "transport": "streamable_http",
-                "headers": {"Authorization": f"Bearer {os.environ.get('DATABRICKS_TOKEN', '')}"},
             }
         }
+        if client_id and client_secret:
+            config["analyst"]["auth"] = _DatabricksOAuth(
+                os.environ["DATABRICKS_HOST"], client_id, client_secret
+            )
+        else:
+            config["analyst"]["headers"] = {
+                "Authorization": f"Bearer {os.environ.get('DATABRICKS_TOKEN', '')}"
+            }
     else:
         _configure_mcp_stdio_stderr()
         config = {

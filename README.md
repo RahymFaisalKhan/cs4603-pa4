@@ -996,19 +996,22 @@ model artifact.
 ### Verified deployment evidence
 
 - Manual endpoint `pa4-document-analyst` is `READY` and serves Unity Catalog model
-  `cs4603.pa4.pa4_document_analyst` version 6.
-- The saved notebook contains an HTTP 200 response from a real `curl` invocation. The request
-  that woke the scaled-to-zero endpoint took 42.289 seconds; subsequent warm requests took
-  4.442, 7.671, and 11.408 seconds.
+  `cs4603.pa4.pa4_document_analyst` version 15 (verified 14 July 2026).
+- The saved notebook contains an HTTP 200 response from a real `curl` invocation (4.821 seconds).
+  The subsequent SDK requests took 4.702, 7.371, and 9.733 seconds against the warm endpoint.
 - The deployed endpoint answered the retrieval-only, calculation-only, and combined queries.
   Local and deployed wording differed on two answers, while the retrieved figures, units, and
   calculations agreed.
 - The Bonus B Agent Framework deployment is `READY` on
-  `agents_cs4603-pa4-pa4_document_analyst`, serving version 9 with a standardized ChatAgent
+  `agents_cs4603-pa4-pa4_document_analyst`, serving version 12 with a standardized ChatAgent
   signature and an auto-generated Review App.
 - The Bonus C Databricks App `cs4603-mcp-tools` deployed successfully as a standalone HTTPS MCP
-  service. Its URL is configured through `MCP_SERVER_URL`, with stdio retained as the Part 1
-  fallback.
+  service. Its protected `/api/mcp` route is configured through `MCP_SERVER_URL`; Model Serving
+  authenticates with a least-privilege service principal and OAuth credentials stored in the
+  Databricks secret scope. Stdio remains the Part 1 fallback.
+- Vector Search index `cs4603.pa4.pa4_analyst_index` is ready with all seven source rows. Its
+  Delta Sync checkpoint was rebuilt after the source Delta table was recreated, and the new
+  pipeline completed successfully.
 
 ### Task 1.2 — Planner
 
@@ -1118,3 +1121,17 @@ App authentication, least-privilege service identities, authorization checks, an
 networking where available. Bundling is preferable for a small stable toolset and atomic
 deployment; a separate service is worthwhile when several agents share tools or the tools need
 independent scaling.
+
+#### Verified Bonus C evidence (14 July 2026)
+
+- Databricks App: `cs4603-mcp-tools`, with app state `RUNNING`, compute state `ACTIVE`, and a
+  successful active deployment.
+- Protected transport: `https://cs4603-mcp-tools-7474653007190101.aws.databricksapps.com/api/mcp`.
+- The app service principal `cs4603-pa4-mcp-client` has only `CAN_USE`; its client ID and secret
+  are referenced from the `cs4603-deploy` Databricks secret scope rather than committed files.
+- Manual endpoint version `15` answered “What is 15% of 2.4 billion?” with `360 million` through
+  the remote MCP service.
+- With the app stopped, the same endpoint request failed and reported `503 Service Unavailable`
+  for `/api/mcp`. After restarting the app, the endpoint returned HTTP 200 and the correct
+  answer again. This verifies that calculations use the independent HTTP service rather than
+  the bundled stdio subprocess.
