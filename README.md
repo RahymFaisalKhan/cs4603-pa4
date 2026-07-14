@@ -996,7 +996,7 @@ model artifact.
 ### Verified deployment evidence
 
 - Manual endpoint `pa4-document-analyst` is `READY` and serves Unity Catalog model
-  `cs4603.pa4.pa4_document_analyst` version 15 (verified 14 July 2026).
+  `cs4603.pa4.pa4_document_analyst` version 18 (verified 14 July 2026).
 - The saved notebook contains an HTTP 200 response from a real `curl` invocation (4.821 seconds).
   The subsequent SDK requests took 4.702, 7.371, and 9.733 seconds against the warm endpoint.
 - The deployed endpoint answered the retrieval-only, calculation-only, and combined queries.
@@ -1135,3 +1135,5 @@ independent scaling.
   for `/api/mcp`. After restarting the app, the endpoint returned HTTP 200 and the correct
   answer again. This verifies that calculations use the independent HTTP service rather than
   the bundled stdio subprocess.
+- The subsequent successful GitHub Actions deployment promoted version `18` to 100% traffic;
+  a live calculation check against that version also returned HTTP 200 and `360 million`.
