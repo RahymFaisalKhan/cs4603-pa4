@@ -996,9 +996,10 @@ model artifact.
 ### Verified deployment evidence
 
 - Manual endpoint `pa4-document-analyst` is `READY` and serves Unity Catalog model
-  `cs4603.pa4.pa4_document_analyst` version 18 (verified 14 July 2026).
-- The saved notebook contains an HTTP 200 response from a real `curl` invocation (4.821 seconds).
-  The subsequent SDK requests took 4.702, 7.371, and 9.733 seconds against the warm endpoint.
+  `cs4603.pa4.pa4_document_analyst` version 19 (verified 14 July 2026).
+- The saved notebook records a verified 43.486-second scaled-to-zero cold start beside an HTTP
+  200 `curl` request that took 4.301 seconds while warm. Subsequent SDK requests took 3.954,
+  9.230, and 6.364 seconds.
 - The deployed endpoint answered the retrieval-only, calculation-only, and combined queries.
   Local and deployed wording differed on two answers, while the retrieved figures, units, and
   calculations agreed.
@@ -1135,5 +1136,7 @@ independent scaling.
   for `/api/mcp`. After restarting the app, the endpoint returned HTTP 200 and the correct
   answer again. This verifies that calculations use the independent HTTP service rather than
   the bundled stdio subprocess.
-- The subsequent successful GitHub Actions deployment promoted version `18` to 100% traffic;
-  a live calculation check against that version also returned HTTP 200 and `360 million`.
+- The subsequent successful GitHub Actions deployment promoted version `19` to 100% traffic;
+  live retrieval and calculation checks against that version returned HTTP 200, correctly
+  reporting FY2023 owner-attributable net income of ¥1,107 billion and 15% of 2.4 billion as
+  360 million.
