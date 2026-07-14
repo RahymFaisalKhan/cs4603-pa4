@@ -12,6 +12,7 @@ from langchain_core.documents import Document
 from langchain_core.messages import AIMessage
 
 from agent.graph import _run_async, build_graph, load_mcp_tools
+from agent.prompts import RAG_EXTRACT_PROMPT
 from client.sdk import DocumentAnalystClient
 
 
@@ -23,6 +24,13 @@ def test_run_async_inside_running_event_loop():
         return _run_async(answer())
 
     assert asyncio.run(outer()) == 42
+
+
+def test_net_income_definition_excludes_non_controlling_interests():
+    prompt = RAG_EXTRACT_PROMPT.lower()
+    assert "net income attributable to owners" in prompt
+    assert "excluding non-controlling interests" in prompt
+    assert "not `profit for the year`" in prompt
 
 
 class FakeRetriever:
