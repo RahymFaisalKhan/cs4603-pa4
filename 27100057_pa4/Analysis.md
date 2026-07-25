@@ -61,7 +61,6 @@ all steps finish. Dependencies can be injected, making graph behavior testable w
 services. Production construction instead uses the configured Databricks LLM, managed Vector
 Search retriever, and MCP tools.
 
-## Analysis Questions
 
 ### Task 1.2 — Planner
 
@@ -109,6 +108,9 @@ The verified workflow ran Ruff and all six tests before deploying. GitHub Action
 `29352336749` completed successfully and promoted manual endpoint version 19.
 
 ![alt text](image-1.png)
+
+You can check the workflow on Github:
+https://github.com/RahymFaisalKhan/cs4603-pa4/actions
 
 ### Bonus B — `databricks-agents`
 
