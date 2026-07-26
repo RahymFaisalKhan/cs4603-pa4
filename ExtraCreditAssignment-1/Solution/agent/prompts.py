@@ -51,7 +51,12 @@ comparisons, rankings, aggregation, highest/lowest, operating margins, and year-
 analysis. Return `rag_agent` for narrative or qualitative annual-report questions such as
 risks, strategy, explanations, priorities, or management commentary. Return `uc_tools` only
 for a deterministic numeric transform or calculation that should use a governed function.
-Do not route arithmetic embedded inside a structured SQL aggregation away from Genie."""
+Do not route arithmetic embedded inside a structured SQL aggregation away from Genie.
+
+Coverage boundary: the governed Genie Space contains only FY2022–FY2023 income-statement
+line items and segment financials. Route FY2024 forecasts/guidance, regional/geographic
+revenue, cash-flow, balance-sheet, capital-expenditure, and executive-compensation questions
+to `rag_agent`, because those facts are available only in the annual report."""
 
 GENIE_STEP_PROMPT = """Answer the current structured-data step from the governed Meridian
 tables. Return the generated SQL and its result table. Amounts use raw Japanese yen unless a

@@ -1,0 +1,128 @@
+{
+  "trace_id": "tr-52ce971ca8be0af8276aa9bcc4c2e4bb",
+  "experiment_id": "1306660282575833",
+  "endpoint": "agents_cs4603-pa4-pa4_document_analyst",
+  "question": "Rank Meridian's FY2023 segments by revenue.",
+  "winning_route": [
+    "genie"
+  ],
+  "spans": [
+    {
+      "depth": 0,
+      "name": "multi_source_document_analyst",
+      "span_type": "AGENT",
+      "duration_ms": 21200.91,
+      "status": "SpanStatusCode.OK",
+      "span_id": "af6a8688501b4f43",
+      "parent_id": null
+    },
+    {
+      "depth": 1,
+      "name": "_query_genie_as_agent",
+      "span_type": "None",
+      "duration_ms": 18088.96,
+      "status": "SpanStatusCode.OK",
+      "span_id": "7f0b057853c5a329",
+      "parent_id": "af6a8688501b4f43"
+    },
+    {
+      "depth": 2,
+      "name": "ask_question",
+      "span_type": "None",
+      "duration_ms": 18087.91,
+      "status": "SpanStatusCode.OK",
+      "span_id": "1dc2ea17172a01c1",
+      "parent_id": "7f0b057853c5a329"
+    },
+    {
+      "depth": 3,
+      "name": "start_conversation",
+      "span_type": "None",
+      "duration_ms": 191.79,
+      "status": "SpanStatusCode.OK",
+      "span_id": "f14c0838850ad3ef",
+      "parent_id": "1dc2ea17172a01c1"
+    },
+    {
+      "depth": 3,
+      "name": "poll_for_result",
+      "span_type": "None",
+      "duration_ms": 17895.56,
+      "status": "SpanStatusCode.OK",
+      "span_id": "255536da83b36cb0",
+      "parent_id": "1dc2ea17172a01c1"
+    },
+    {
+      "depth": 4,
+      "name": "poll_result",
+      "span_type": "None",
+      "duration_ms": 17895.07,
+      "status": "SpanStatusCode.OK",
+      "span_id": "fc64fd9709af4f11",
+      "parent_id": "255536da83b36cb0"
+    },
+    {
+      "depth": 5,
+      "name": "genie_timeline",
+      "span_type": "CHAIN",
+      "duration_ms": 17839.41,
+      "status": "SpanStatusCode.OK",
+      "span_id": "5e737d4ba3a0ecd8",
+      "parent_id": "fc64fd9709af4f11"
+    },
+    {
+      "depth": 6,
+      "name": "filtering_context",
+      "span_type": "CHAIN",
+      "duration_ms": 611.33,
+      "status": "SpanStatusCode.OK",
+      "span_id": "1f5fc91a91214ead",
+      "parent_id": "5e737d4ba3a0ecd8"
+    },
+    {
+      "depth": 6,
+      "name": "asking_ai",
+      "span_type": "CHAIN",
+      "duration_ms": 3791.86,
+      "status": "SpanStatusCode.OK",
+      "span_id": "e4344b7437193158",
+      "parent_id": "5e737d4ba3a0ecd8"
+    },
+    {
+      "depth": 6,
+      "name": "pending_warehouse",
+      "span_type": "CHAIN",
+      "duration_ms": 5504.77,
+      "status": "SpanStatusCode.OK",
+      "span_id": "2b4561c150d52aa4",
+      "parent_id": "5e737d4ba3a0ecd8"
+    },
+    {
+      "depth": 6,
+      "name": "asking_ai",
+      "span_type": "CHAIN",
+      "duration_ms": 7394.48,
+      "status": "SpanStatusCode.OK",
+      "span_id": "30917e43776cc861",
+      "parent_id": "5e737d4ba3a0ecd8"
+    },
+    {
+      "depth": 6,
+      "name": "poll_query_results",
+      "span_type": "None",
+      "duration_ms": 346.6,
+      "status": "SpanStatusCode.OK",
+      "span_id": "b410a891dc319044",
+      "parent_id": "5e737d4ba3a0ecd8"
+    },
+    {
+      "depth": 7,
+      "name": "_parse_query_result",
+      "span_type": "PARSER",
+      "duration_ms": 19.84,
+      "status": "SpanStatusCode.OK",
+      "span_id": "d676a780cafef78c",
+      "parent_id": "b410a891dc319044"
+    }
+  ]
+}

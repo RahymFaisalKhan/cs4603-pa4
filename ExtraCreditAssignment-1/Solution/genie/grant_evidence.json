@@ -1,0 +1,69 @@
+{
+  "principal": "53f956da-ff9f-4f38-a9f9-cf8f494a04b0",
+  "privileges": [
+    "USE CATALOG on cs4603",
+    "USE SCHEMA on cs4603.pa4",
+    "SELECT on cs4603.pa4.meridian_segment_financials",
+    "SELECT on cs4603.pa4.meridian_income_statement"
+  ],
+  "grants": [
+    {
+      "statement": "SELECT grantee, catalog_name, privilege_type FROM cs4603.information_schema.catalog_privileges WHERE grantee = '53f956da-ff9f-4f38-a9f9-cf8f494a04b0'",
+      "columns": [
+        "grantee",
+        "catalog_name",
+        "privilege_type"
+      ],
+      "rows": [
+        [
+          "53f956da-ff9f-4f38-a9f9-cf8f494a04b0",
+          "cs4603",
+          "USE_CATALOG"
+        ]
+      ]
+    },
+    {
+      "statement": "SELECT grantee, catalog_name, schema_name, privilege_type FROM cs4603.information_schema.schema_privileges WHERE grantee = '53f956da-ff9f-4f38-a9f9-cf8f494a04b0' AND schema_name = 'pa4'",
+      "columns": [
+        "grantee",
+        "catalog_name",
+        "schema_name",
+        "privilege_type"
+      ],
+      "rows": [
+        [
+          "53f956da-ff9f-4f38-a9f9-cf8f494a04b0",
+          "cs4603",
+          "pa4",
+          "USE_SCHEMA"
+        ]
+      ]
+    },
+    {
+      "statement": "SELECT grantee, table_catalog, table_schema, table_name, privilege_type FROM cs4603.information_schema.table_privileges WHERE grantee = '53f956da-ff9f-4f38-a9f9-cf8f494a04b0' AND table_schema = 'pa4' AND table_name LIKE 'meridian_%' ORDER BY table_name",
+      "columns": [
+        "grantee",
+        "table_catalog",
+        "table_schema",
+        "table_name",
+        "privilege_type"
+      ],
+      "rows": [
+        [
+          "53f956da-ff9f-4f38-a9f9-cf8f494a04b0",
+          "cs4603",
+          "pa4",
+          "meridian_income_statement",
+          "SELECT"
+        ],
+        [
+          "53f956da-ff9f-4f38-a9f9-cf8f494a04b0",
+          "cs4603",
+          "pa4",
+          "meridian_segment_financials",
+          "SELECT"
+        ]
+      ]
+    }
+  ]
+}

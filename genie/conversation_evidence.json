@@ -1,0 +1,86 @@
+[
+  {
+    "question": "Rank Meridian's FY2023 segments by revenue.",
+    "conversation_id": "01f188687405193798985cc65600eed0",
+    "message_id": "01f188687417153d85b55228bcfb5db1",
+    "generated_sql": "SELECT segment, try_divide(revenue_yen,1000000000.0) AS revenue_billion_yen\nFROM cs4603.pa4.meridian_segment_financials\nWHERE fiscal_year = 2023\nORDER BY revenue_yen DESC",
+    "columns": [
+      "segment",
+      "revenue_billion_yen"
+    ],
+    "rows": [
+      [
+        "Automobile",
+        "12900.000000000000"
+      ],
+      [
+        "Motorcycle",
+        "2510.000000000000"
+      ],
+      [
+        "Financial Services",
+        "1100.000000000000"
+      ],
+      [
+        "Power Products & Other",
+        "400.000000000000"
+      ]
+    ],
+    "text": "Meridian's FY2023 segments ranked by revenue (in billions of yen) are: \n- **Automobile**: 12,900\n- **Motorcycle**: 2,510\n- **Financial Services**: 1,100\n- **Power Products & Other**: 400\nThe Automobile segment generated the highest revenue, while Power Products & Other had the lowest."
+  },
+  {
+    "question": "Which segment improved operating margin the most from FY2022 to FY2023?",
+    "conversation_id": "01f188687f991781926ac04294f34ecb",
+    "message_id": "01f188687fa017bf96503a7da988da0d",
+    "generated_sql": "WITH margin_change AS (\n  SELECT \n    curr.segment,\n    try_divide(curr.operating_income_yen,curr.revenue_yen) AS fy2023_margin,\n    try_divide(prev.operating_income_yen,prev.revenue_yen) AS fy2022_margin,\n    (try_divide(curr.operating_income_yen,curr.revenue_yen)) - (try_divide(prev.operating_income_yen,prev.revenue_yen)) AS margin_change\n  FROM `cs4603`.`pa4`.`meridian_segment_financials` curr\n  JOIN `cs4603`.`pa4`.`meridian_segment_financials` prev\n    ON curr.segment = prev.segment\n  WHERE curr.fiscal_year = 2023 AND prev.fiscal_year = 2022\n    AND curr.operating_income_yen IS NOT NULL AND curr.revenue_yen IS NOT NULL\n    AND prev.operating_income_yen IS NOT NULL AND prev.revenue_yen IS NOT NULL\n)\nSELECT segment, fy2022_margin, fy2023_margin, margin_change\nFROM margin_change\nWHERE margin_change = (\n  SELECT MAX(margin_change) FROM margin_change\n)",
+    "columns": [
+      "segment",
+      "fy2022_margin",
+      "fy2023_margin",
+      "margin_change"
+    ],
+    "rows": [
+      [
+        "Financial Services",
+        "0.1407766990291262",
+        "0.16363636363636364",
+        "0.02285966460723743"
+      ]
+    ],
+    "text": "The **Financial Services** segment had the largest improvement in operating margin from FY2022 to FY2023, increasing from 0.1408 to 0.1636. The margin change was **+0.0229**. This was the highest margin improvement among all segments in the data."
+  },
+  {
+    "question": "Compare FY2022 and FY2023 net revenue and operating profit.",
+    "conversation_id": "01f188688bd513ca93ddaad01674105b",
+    "message_id": "01f188688bdd151c98f65dc8de6abff9",
+    "generated_sql": "SELECT fiscal_year, line_item, try_divide(amount_yen,1000000000.0) AS amount_billion_yen\nFROM cs4603.pa4.meridian_income_statement\nWHERE fiscal_year IN (2022, 2023)\n  AND line_item IN ('Net revenue', 'Operating profit')\n  AND amount_yen IS NOT NULL\nORDER BY line_item, fiscal_year",
+    "columns": [
+      "fiscal_year",
+      "line_item",
+      "amount_billion_yen"
+    ],
+    "rows": [
+      [
+        "2022",
+        "Net revenue",
+        "14550.000000000000"
+      ],
+      [
+        "2023",
+        "Net revenue",
+        "16910.000000000000"
+      ],
+      [
+        "2022",
+        "Operating profit",
+        "905.000000000000"
+      ],
+      [
+        "2023",
+        "Operating profit",
+        "1124.000000000000"
+      ]
+    ],
+    "text": "In FY2022, **net revenue** was \u00a514,550 billion and **operating profit** was \u00a5905 billion. In FY2023, **net revenue** increased to \u00a516,910 billion and **operating profit** rose to \u00a51,124 billion. Both net revenue and operating profit grew from FY2022 to FY2023."
+  }
+]

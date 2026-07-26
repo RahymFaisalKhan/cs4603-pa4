@@ -1,0 +1,32 @@
+{
+  "endpoint": "agents_cs4603-pa4-pa4_document_analyst",
+  "endpoint_state": {
+    "config_update": "NOT_UPDATING",
+    "ready": "READY"
+  },
+  "registered_model": "cs4603.pa4.pa4_document_analyst_multi",
+  "model_version": "3",
+  "model_mlflow_run_id": "8a8674395ac940ea883966533cd0aeb5",
+  "served_entity": "cs4603-pa4-pa4_document_analyst_multi_3",
+  "behavioral_change": {
+    "name": "table_coverage_routing_guard",
+    "source": "agent/graph_multi.py",
+    "description": "Route facts outside the two curated Genie tables to annual-report RAG."
+  },
+  "declared_resources": [
+    "databricks-meta-llama-3-3-70b-instruct",
+    "cs4603.pa4.pa4_analyst_index",
+    "01f1886749c81c3eada5b6f36fcacb63",
+    "cs4603.pa4.meridian_segment_financials",
+    "cs4603.pa4.meridian_income_statement",
+    "cs4603.pa4.growth_rate",
+    "cs4603.pa4.percentage_change",
+    "cs4603.pa4.compare_values",
+    "cs4603.pa4.to_billions"
+  ],
+  "evaluation": {
+    "before_run_id": "c40d62927c5a43fc9e646b92540809d1",
+    "after_run_id": "6051768be35348cb9dbd6bb629f979b3",
+    "dataset_examples": 12
+  }
+}

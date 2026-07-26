@@ -1,0 +1,52 @@
+{
+  "implementation": "code_level_fallback",
+  "reason": "Databricks agent endpoints support inference tables but do not support AI Gateway rate-limit or AI Guardrail policies.",
+  "configuration": {
+    "max_requests_per_user_per_rolling_minute": 2,
+    "pii_types": [
+      "Pakistani CNIC",
+      "US SSN",
+      "email address"
+    ]
+  },
+  "rate_limit_demo": [
+    {
+      "prompt": "first clean request",
+      "decision": "allowed",
+      "response": "passed to graph"
+    },
+    {
+      "prompt": "second clean request",
+      "decision": "allowed",
+      "response": "passed to graph"
+    },
+    {
+      "prompt": "third request",
+      "decision": "rate_limited",
+      "response": "Request blocked: this user exceeded the configured two requests per rolling minute. Try again later."
+    }
+  ],
+  "pii_demo": {
+    "prompt": "Email the report to finance.user@example.com",
+    "decision": "pii_blocked",
+    "response": "Request blocked: remove personal identifiers such as CNICs, SSNs, or email addresses and try again."
+  },
+  "graph_short_circuit_demo": {
+    "rate_limit": {
+      "guardrail_reason": "rate_limited",
+      "route_history": [
+        "guardrail"
+      ],
+      "final_answer": "Request blocked: this user exceeded the configured two requests per rolling minute. Try again later.",
+      "downstream_agent_called": false
+    },
+    "pii": {
+      "guardrail_reason": "pii_blocked",
+      "route_history": [
+        "guardrail"
+      ],
+      "final_answer": "Request blocked: remove personal identifiers such as CNICs, SSNs, or email addresses and try again.",
+      "downstream_agent_called": false
+    }
+  }
+}

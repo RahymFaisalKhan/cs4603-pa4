@@ -1,0 +1,26 @@
+{
+  "prompt_name": "cs4603.pa4.meridian_multi_supervisor",
+  "production_uri": "prompts:/cs4603.pa4.meridian_multi_supervisor@production",
+  "versions": [
+    {
+      "version": "1",
+      "role": "baseline",
+      "part3_system_correctness": 0.5833333333333334
+    },
+    {
+      "version": "2",
+      "role": "coverage-aware",
+      "part3_system_correctness": 1.0
+    }
+  ],
+  "alias_demo_without_redeploy": {
+    "loaded_before_promotion": "1",
+    "loaded_after_promotion": "2",
+    "coverage_boundary_present": true,
+    "same_supervisor_instance": true,
+    "route_observed_with_v1": "genie",
+    "route_observed_with_v2": "rag_agent"
+  },
+  "production_alias_version": "2",
+  "selection_rule": "Promote the version associated with higher frozen-set correctness."
+}

@@ -1,0 +1,78 @@
+{
+  "catalog": "cs4603",
+  "schema": "pa4",
+  "functions": [
+    "cs4603.pa4.growth_rate",
+    "cs4603.pa4.percentage_change",
+    "cs4603.pa4.compare_values",
+    "cs4603.pa4.to_billions"
+  ],
+  "verification": {
+    "cs4603.pa4.growth_rate": {
+      "parameters": {
+        "start_value": 16.91,
+        "rate": 0.08,
+        "years": 3.0
+      },
+      "result": "21.301729920000003",
+      "status": "passed"
+    },
+    "cs4603.pa4.percentage_change": {
+      "parameters": {
+        "old_value": 100.0,
+        "new_value": 125.0
+      },
+      "result": "25.0",
+      "status": "passed"
+    },
+    "cs4603.pa4.compare_values": {
+      "parameters": {
+        "a": 16.91,
+        "b": 15.0
+      },
+      "result": "16.91 (a) is larger by 1.91",
+      "status": "passed"
+    },
+    "cs4603.pa4.to_billions": {
+      "parameters": {
+        "amount_yen": 16910000000000.0
+      },
+      "result": "16910.0",
+      "status": "passed"
+    }
+  },
+  "grants": {
+    "cs4603.pa4.growth_rate": [
+      {
+        "principal": "27100057@lums.edu.pk",
+        "privileges": [
+          "EXECUTE"
+        ]
+      }
+    ],
+    "cs4603.pa4.percentage_change": [
+      {
+        "principal": "27100057@lums.edu.pk",
+        "privileges": [
+          "EXECUTE"
+        ]
+      }
+    ],
+    "cs4603.pa4.compare_values": [
+      {
+        "principal": "27100057@lums.edu.pk",
+        "privileges": [
+          "EXECUTE"
+        ]
+      }
+    ],
+    "cs4603.pa4.to_billions": [
+      {
+        "principal": "27100057@lums.edu.pk",
+        "privileges": [
+          "EXECUTE"
+        ]
+      }
+    ]
+  }
+}

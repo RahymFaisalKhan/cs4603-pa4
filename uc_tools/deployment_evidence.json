@@ -1,0 +1,43 @@
+{
+  "endpoint": "agents_cs4603-pa4-pa4_document_analyst",
+  "endpoint_state": {
+    "config_update": "NOT_UPDATING",
+    "ready": "READY"
+  },
+  "registered_model": "cs4603.pa4.pa4_document_analyst_uc",
+  "model_version": "1",
+  "served_entity": "cs4603-pa4-pa4_document_analyst_12",
+  "automatic_authorization": {
+    "declared_resources": [
+      "databricks-meta-llama-3-3-70b-instruct",
+      "cs4603.pa4.pa4_analyst_index",
+      "cs4603.pa4.growth_rate",
+      "cs4603.pa4.percentage_change",
+      "cs4603.pa4.compare_values",
+      "cs4603.pa4.to_billions"
+    ],
+    "endpoint_environment_contains_pat": false,
+    "endpoint_environment_contains_host_secret": false
+  },
+  "query": "What was Meridian's FY2023 net revenue, and what would it be after 3 years of 8% compound growth?",
+  "response": {
+    "messages": [
+      {
+        "role": "assistant",
+        "content": "Meridian's FY2023 net revenue was 16,910 billion yen, as stated in the annual report [source: annual_report.pdf, p.4.0]. After 3 years of 8% compound growth, it would be approximately 21,301.73 billion yen."
+      }
+    ],
+    "finish_reason": "stop",
+    "custom_outputs": {
+      "plan": [
+        "Retrieve Meridian's FY2023 net revenue from the annual report",
+        "Calculate the result of 3 years of 8% compound growth on the retrieved net revenue using the formula: retrieved_net_revenue * (1 + 0.08)^3"
+      ],
+      "step_results": [
+        "16,910 billion yen [source: annual_report.pdf, p.4.0]",
+        "21301.72992"
+      ],
+      "tool_backend": "unity_catalog_functions"
+    }
+  }
+}

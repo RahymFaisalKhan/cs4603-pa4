@@ -1,0 +1,72 @@
+{
+  "metrics": [
+    {
+      "metric": "correctness/mean",
+      "before": 0.5833333333333334,
+      "after": 1.0,
+      "delta": 0.41666666666666663
+    },
+    {
+      "metric": "relevance_to_query/mean",
+      "before": 1.0,
+      "after": 1.0,
+      "delta": 0.0
+    },
+    {
+      "metric": "retrieval_groundedness/mean",
+      "before": 0.5,
+      "after": 0.75,
+      "delta": 0.25
+    },
+    {
+      "metric": "retrieval_relevance/mean",
+      "before": 0.4444444444444444,
+      "after": 0.4444444444444444,
+      "delta": 0.0
+    },
+    {
+      "metric": "retrieval_relevance/precision/mean",
+      "before": 0.5763888888888888,
+      "after": 0.5555555555555555,
+      "delta": -0.02083333333333337
+    }
+  ],
+  "worst_baseline_examples": [
+    {
+      "row": 1,
+      "request": "{'request': 'What net revenue and operating profit did Meridian forecast for FY2024?'}",
+      "mean_judge_score": 0.2,
+      "scores": {
+        "relevance_to_query/value": 1.0,
+        "retrieval_relevance/value": 0.0,
+        "correctness/value": 0.0,
+        "retrieval_relevance/precision/value": 0.0,
+        "retrieval_groundedness/value": 0.0
+      }
+    },
+    {
+      "row": 7,
+      "request": "{'request': 'Using FY2023 operating cash flow and capital expenditure, calculate free cash flow.'}",
+      "mean_judge_score": 0.2,
+      "scores": {
+        "relevance_to_query/value": 1.0,
+        "retrieval_relevance/value": 0.0,
+        "correctness/value": 0.0,
+        "retrieval_relevance/precision/value": 0.0,
+        "retrieval_groundedness/value": 0.0
+      }
+    },
+    {
+      "row": 9,
+      "request": "{'request': 'Was North American FY2023 revenue greater than Motorcycle segment revenue? State both values and the difference.'}",
+      "mean_judge_score": 0.2,
+      "scores": {
+        "relevance_to_query/value": 1.0,
+        "retrieval_relevance/value": 0.0,
+        "correctness/value": 0.0,
+        "retrieval_relevance/precision/value": 0.0,
+        "retrieval_groundedness/value": 0.0
+      }
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "source": "MLflow production traces",
+  "reason": "Workspace rejected inference tables for this agent endpoint type.",
+  "experiment_id": "1306660282575833",
+  "n_requests": 4,
+  "avg_latency_ms": 15936.61,
+  "max_latency_ms": 21200.91,
+  "error_count": 0,
+  "requests": [
+    {
+      "question": "Rank Meridian's FY2023 segments by revenue.",
+      "trace_id": "tr-52ce971ca8be0af8276aa9bcc4c2e4bb",
+      "duration_ms": 21200.91,
+      "status": "SpanStatusCode.OK"
+    },
+    {
+      "question": "What was Meridian's FY2023 net income?",
+      "trace_id": "tr-165465a3e401a144a80155e88ce11160",
+      "duration_ms": 13807.34,
+      "status": "SpanStatusCode.OK"
+    },
+    {
+      "question": "What strategic risk could affect Meridian's profitability?",
+      "trace_id": "tr-e2799c16b20bdcb468ac3c63788e300e",
+      "duration_ms": 11432.59,
+      "status": "SpanStatusCode.OK"
+    },
+    {
+      "question": "Which FY2023 segment had the highest operating margin?",
+      "trace_id": "tr-a91d519db4b0d3693c96963558003e92",
+      "duration_ms": 17305.6,
+      "status": "SpanStatusCode.OK"
+    }
+  ]
+}

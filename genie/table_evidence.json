@@ -1,0 +1,334 @@
+{
+  "catalog": "cs4603",
+  "schema": "pa4",
+  "warehouse_id": "b4167325a6783244",
+  "source": "data/annual_report.md",
+  "derivation_note": "FY2023 segment and both income-statement years are transcribed from the report. FY2022 segment rows are plausible synthesized allocations that sum exactly to reported revenue of 14.55T yen and operating profit of 905B yen.",
+  "validation": [
+    {
+      "statement": "SELECT fiscal_year,\n       SUM(revenue_yen) AS segment_revenue_yen,\n       SUM(operating_income_yen) AS segment_operating_income_yen\nFROM cs4603.pa4.meridian_segment_financials\nGROUP BY fiscal_year\nORDER BY fiscal_year",
+      "columns": [
+        "fiscal_year",
+        "segment_revenue_yen",
+        "segment_operating_income_yen"
+      ],
+      "rows": [
+        [
+          "2022",
+          "14550000000000",
+          "905000000000"
+        ],
+        [
+          "2023",
+          "16910000000000",
+          "1124000000000"
+        ]
+      ]
+    },
+    {
+      "statement": "SELECT fiscal_year, line_item, amount_yen\nFROM cs4603.pa4.meridian_income_statement\nWHERE line_item IN ('Net revenue', 'Operating profit', 'Net income attributable to owners')\nORDER BY fiscal_year, display_order",
+      "columns": [
+        "fiscal_year",
+        "line_item",
+        "amount_yen"
+      ],
+      "rows": [
+        [
+          "2022",
+          "Net revenue",
+          "14550000000000"
+        ],
+        [
+          "2022",
+          "Operating profit",
+          "905000000000"
+        ],
+        [
+          "2022",
+          "Net income attributable to owners",
+          "707000000000"
+        ],
+        [
+          "2023",
+          "Net revenue",
+          "16910000000000"
+        ],
+        [
+          "2023",
+          "Operating profit",
+          "1124000000000"
+        ],
+        [
+          "2023",
+          "Net income attributable to owners",
+          "1107000000000"
+        ]
+      ]
+    },
+    {
+      "statement": "DESCRIBE TABLE EXTENDED cs4603.pa4.meridian_segment_financials",
+      "columns": [
+        "col_name",
+        "data_type",
+        "comment"
+      ],
+      "rows": [
+        [
+          "fiscal_year",
+          "int",
+          "Fiscal year ending March 31, expressed as a four-digit year."
+        ],
+        [
+          "segment",
+          "string",
+          "Meridian reportable business segment."
+        ],
+        [
+          "revenue_yen",
+          "bigint",
+          "External net revenue in raw Japanese yen."
+        ],
+        [
+          "operating_income_yen",
+          "bigint",
+          "Segment operating profit in raw Japanese yen."
+        ],
+        [
+          "units_sold",
+          "bigint",
+          "Units sold in the fiscal year; NULL for non-unit-based segments."
+        ],
+        [
+          "",
+          "",
+          ""
+        ],
+        [
+          "# Detailed Table Information",
+          "",
+          ""
+        ],
+        [
+          "Catalog",
+          "cs4603",
+          ""
+        ],
+        [
+          "Database",
+          "pa4",
+          ""
+        ],
+        [
+          "Table",
+          "meridian_segment_financials",
+          ""
+        ],
+        [
+          "Created Time",
+          "Sat Jul 25 20:11:20 UTC 2026",
+          ""
+        ],
+        [
+          "Last Access",
+          "UNKNOWN",
+          ""
+        ],
+        [
+          "Created By",
+          "Spark ",
+          ""
+        ],
+        [
+          "Statistics",
+          "2511 bytes, 8 rows",
+          ""
+        ],
+        [
+          "Type",
+          "MANAGED",
+          ""
+        ],
+        [
+          "Comment",
+          "Meridian reportable-segment financials for FY2022-FY2023, derived from the FY2023 annual report; FY2022 segment allocation is explicitly synthesized and reconciles to consolidated totals.",
+          ""
+        ],
+        [
+          "Collation",
+          "UTF8_BINARY",
+          ""
+        ],
+        [
+          "Location",
+          "",
+          ""
+        ],
+        [
+          "Provider",
+          "delta",
+          ""
+        ],
+        [
+          "Owner",
+          "27100057@lums.edu.pk",
+          ""
+        ],
+        [
+          "Is_managed_location",
+          "true",
+          ""
+        ],
+        [
+          "Predictive Optimization",
+          "ENABLE (inherited from METASTORE metastore_aws_us_east_2)",
+          ""
+        ],
+        [
+          "Table Properties",
+          "[delta.checkpoint.writeStatsAsJson=false,delta.checkpoint.writeStatsAsStruct=true,delta.enableDeletionVectors=true,delta.feature.appendOnly=supported,delta.feature.deletionVectors=supported,delta.feature.domainMetadata=supported,delta.feature.invariants=supported,delta.feature.rowTracking=supported,delta.minReaderVersion=3,delta.minWriterVersion=7,delta.parquet.compression.codec=zstd,delta.parquet.format.version=2.12.0,delta.parquet.format.version.afe.internal=2.12.0,delta.rowTracking.materializedRowCommitVersionColumnName=_row-commit-version-col-1f2e6e9f-c4b1-4c08-980e-02b93007dbb5,delta.rowTracking.materializedRowIdColumnName=_row-id-col-d256086c-c42a-4999-96f7-0f971679b8e2]",
+          ""
+        ]
+      ]
+    },
+    {
+      "statement": "DESCRIBE TABLE EXTENDED cs4603.pa4.meridian_income_statement",
+      "columns": [
+        "col_name",
+        "data_type",
+        "comment"
+      ],
+      "rows": [
+        [
+          "fiscal_year",
+          "int",
+          "Fiscal year ending March 31, expressed as a four-digit year."
+        ],
+        [
+          "display_order",
+          "int",
+          "Presentation order in the condensed statement of operations."
+        ],
+        [
+          "line_item",
+          "string",
+          "Consolidated income-statement line item."
+        ],
+        [
+          "amount_yen",
+          "bigint",
+          "Amount in raw Japanese yen; costs and expenses are negative."
+        ],
+        [
+          "",
+          "",
+          ""
+        ],
+        [
+          "# Detailed Table Information",
+          "",
+          ""
+        ],
+        [
+          "Catalog",
+          "cs4603",
+          ""
+        ],
+        [
+          "Database",
+          "pa4",
+          ""
+        ],
+        [
+          "Table",
+          "meridian_income_statement",
+          ""
+        ],
+        [
+          "Created Time",
+          "Sat Jul 25 20:11:34 UTC 2026",
+          ""
+        ],
+        [
+          "Last Access",
+          "UNKNOWN",
+          ""
+        ],
+        [
+          "Created By",
+          "Spark ",
+          ""
+        ],
+        [
+          "Statistics",
+          "2478 bytes, 26 rows",
+          ""
+        ],
+        [
+          "Type",
+          "MANAGED",
+          ""
+        ],
+        [
+          "Comment",
+          "Meridian condensed consolidated statement of operations for FY2022-FY2023, transcribed from the FY2023 annual report.",
+          ""
+        ],
+        [
+          "Collation",
+          "UTF8_BINARY",
+          ""
+        ],
+        [
+          "Location",
+          "",
+          ""
+        ],
+        [
+          "Provider",
+          "delta",
+          ""
+        ],
+        [
+          "Owner",
+          "27100057@lums.edu.pk",
+          ""
+        ],
+        [
+          "Is_managed_location",
+          "true",
+          ""
+        ],
+        [
+          "Predictive Optimization",
+          "ENABLE (inherited from METASTORE metastore_aws_us_east_2)",
+          ""
+        ],
+        [
+          "Table Properties",
+          "[delta.checkpoint.writeStatsAsJson=false,delta.checkpoint.writeStatsAsStruct=true,delta.enableDeletionVectors=true,delta.feature.appendOnly=supported,delta.feature.deletionVectors=supported,delta.feature.domainMetadata=supported,delta.feature.invariants=supported,delta.feature.rowTracking=supported,delta.minReaderVersion=3,delta.minWriterVersion=7,delta.parquet.compression.codec=zstd,delta.parquet.format.version=2.12.0,delta.parquet.format.version.afe.internal=2.12.0,delta.rowTracking.materializedRowCommitVersionColumnName=_row-commit-version-col-0b6207e1-d415-4088-8ac7-aa8e55424354,delta.rowTracking.materializedRowIdColumnName=_row-id-col-6b10d60e-ceb0-498f-b55c-4ffbf122e4b4]",
+          ""
+        ]
+      ]
+    },
+    {
+      "statement": "SHOW GRANTS ON TABLE cs4603.pa4.meridian_segment_financials",
+      "columns": [
+        "Principal",
+        "ActionType",
+        "ObjectType",
+        "ObjectKey"
+      ],
+      "rows": []
+    },
+    {
+      "statement": "SHOW GRANTS ON TABLE cs4603.pa4.meridian_income_statement",
+      "columns": [
+        "Principal",
+        "ActionType",
+        "ObjectType",
+        "ObjectKey"
+      ],
+      "rows": []
+    }
+  ]
+}

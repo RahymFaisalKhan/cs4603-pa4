@@ -1,0 +1,60 @@
+{
+  "endpoint": "agents_cs4603-pa4-pa4_document_analyst",
+  "endpoint_state": {
+    "config_update": "NOT_UPDATING",
+    "ready": "READY"
+  },
+  "registered_model": "cs4603.pa4.pa4_document_analyst_multi",
+  "model_version": "1",
+  "mlflow_run_id": "1cb4f4f26e2b40a1b63b8e73ff958cb9",
+  "served_entity": "cs4603-pa4-pa4_document_analyst_multi_1",
+  "automatic_authorization": {
+    "genie_space_id": "01f1886749c81c3eada5b6f36fcacb63",
+    "declared_resources": [
+      "databricks-meta-llama-3-3-70b-instruct",
+      "cs4603.pa4.pa4_analyst_index",
+      "01f1886749c81c3eada5b6f36fcacb63",
+      "cs4603.pa4.growth_rate",
+      "cs4603.pa4.percentage_change",
+      "cs4603.pa4.compare_values",
+      "cs4603.pa4.to_billions"
+    ],
+    "endpoint_environment_contains_pat": false
+  },
+  "data_principal": {
+    "service_principal_id": "76958183485024",
+    "application_id": "53f956da-ff9f-4f38-a9f9-cf8f494a04b0",
+    "privileges": [
+      "USE CATALOG on cs4603",
+      "USE SCHEMA on cs4603.pa4",
+      "SELECT on cs4603.pa4.meridian_segment_financials",
+      "SELECT on cs4603.pa4.meridian_income_statement"
+    ]
+  },
+  "query": "Rank Meridian FY2023 segments by revenue.",
+  "response": {
+    "messages": [
+      {
+        "role": "assistant",
+        "content": "Based on the SQL query results, the Meridian FY2023 segments ranked by revenue are: 1. Automobile - 12,900,000,000,000 yen; 2. Motorcycle - 2,510,000,000,000 yen; 3. Financial Services - 1,100,000,000,000 yen; 4. Power Products & Other - 400,000,000,000 yen."
+      }
+    ],
+    "finish_reason": "stop",
+    "custom_outputs": {
+      "plan": [
+        "Rank Meridian FY2023 segments by revenue."
+      ],
+      "step_results": [
+        "Generated SQL:\nSELECT `segment`, `revenue_yen` FROM `cs4603`.`pa4`.`meridian_segment_financials` WHERE `fiscal_year` = 2023 ORDER BY `revenue_yen` DESC\n\nStructured result:\n|    | segment                |    revenue_yen |\n|---:|:-----------------------|---------------:|\n|  0 | Automobile             | 12900000000000 |\n|  1 | Motorcycle             |  2510000000000 |\n|  2 | Financial Services     |  1100000000000 |\n|  3 | Power Products & Other |   400000000000 |"
+      ],
+      "route_history": [
+        "genie"
+      ],
+      "data_backends": [
+        "vector_search",
+        "genie",
+        "unity_catalog_functions"
+      ]
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "action": "created",
+  "space_id": "01f1886749c81c3eada5b6f36fcacb63",
+  "title": "Meridian Financial Analytics",
+  "description": "Governed structured analysis of Meridian Motor Corporation segment and income-statement results for FY2022 and FY2023.",
+  "warehouse_id": "b4167325a6783244",
+  "tables": [
+    "cs4603.pa4.meridian_segment_financials",
+    "cs4603.pa4.meridian_income_statement"
+  ],
+  "curation": {
+    "general_instruction_count": 1,
+    "trusted_query_count": 2,
+    "sample_question_count": 3
+  }
+}

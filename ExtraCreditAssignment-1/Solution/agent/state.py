@@ -15,4 +15,6 @@ class AnalystState(TypedDict, total=False):
     next_agent: str
     route_history: list[str]
     genie_conversation_id: str
+    user_id: str
+    guardrail_reason: str
     final_answer: str
