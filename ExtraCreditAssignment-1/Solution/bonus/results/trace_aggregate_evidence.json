@@ -1,34 +1,34 @@
 {
   "source": "MLflow production traces",
-  "reason": "Workspace rejected inference tables for this agent endpoint type.",
+  "reason": "Independent trace aggregate accompanying the client-side Unity Catalog payload-log fallback.",
   "experiment_id": "1306660282575833",
   "n_requests": 4,
-  "avg_latency_ms": 15936.61,
-  "max_latency_ms": 21200.91,
+  "avg_latency_ms": 21880.8,
+  "max_latency_ms": 38264.84,
   "error_count": 0,
   "requests": [
     {
       "question": "Rank Meridian's FY2023 segments by revenue.",
-      "trace_id": "tr-52ce971ca8be0af8276aa9bcc4c2e4bb",
-      "duration_ms": 21200.91,
+      "trace_id": "tr-d0bc64e74f5946f02d444404138e4afe",
+      "duration_ms": 38264.84,
       "status": "SpanStatusCode.OK"
     },
     {
       "question": "What was Meridian's FY2023 net income?",
-      "trace_id": "tr-165465a3e401a144a80155e88ce11160",
-      "duration_ms": 13807.34,
+      "trace_id": "tr-d11601889c573c28837413f2209219c1",
+      "duration_ms": 15105.66,
       "status": "SpanStatusCode.OK"
     },
     {
       "question": "What strategic risk could affect Meridian's profitability?",
-      "trace_id": "tr-e2799c16b20bdcb468ac3c63788e300e",
-      "duration_ms": 11432.59,
+      "trace_id": "tr-754af8b4aada316294cd1a2e1db63ff0",
+      "duration_ms": 13400.94,
       "status": "SpanStatusCode.OK"
     },
     {
       "question": "Which FY2023 segment had the highest operating margin?",
-      "trace_id": "tr-a91d519db4b0d3693c96963558003e92",
-      "duration_ms": 17305.6,
+      "trace_id": "tr-1a863231d6fe5893bfc7a0a943c476ee",
+      "duration_ms": 20751.76,
       "status": "SpanStatusCode.OK"
     }
   ]

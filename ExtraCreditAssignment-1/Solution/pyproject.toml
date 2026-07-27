@@ -2,7 +2,6 @@
 name = "pa4-document-analyst"
 version = "0.1.0"
 description = "CS4603 PA4 — LangGraph multi-agent Document Analyst deployed on Databricks"
-readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     # ─── LangGraph / LangChain core ──────────────────────────────────────────
@@ -58,6 +57,5 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["agent", "rag", "client", "tools", "deployment", "uc_tools", "genie", "eval", "bonus"]
 # config.py is a top-level module imported everywhere as `from config import ...`
-only-include = ["agent", "rag", "client", "tools", "deployment", "uc_tools", "genie", "eval", "bonus", "config.py"]
+only-include = ["agent", "rag", "deployment", "uc_tools", "genie", "eval", "bonus", "config.py"]

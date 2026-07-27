@@ -1,6 +1,10 @@
 # CS4603 Extra-Credit Assignment 1
 
-This submission covers all parts of the extra credit assignment.
+This submission completes Parts 1–3 and Part 4 Challenges E and F. Challenge D
+includes its live trace and a working production-traffic SQL result through a
+transparent client-side Unity Catalog payload-log fallback. The workspace
+rejected the exact Databricks-managed inference-table feature, so that one
+platform-managed step remains explicitly identified rather than misrepresented.
 
 ## Part 1 — Unity Catalog Functions
 
@@ -150,6 +154,12 @@ ORDER BY revenue_yen DESC
 
 It returned Automobile ¥12,900B, Motorcycle ¥2,510B, Financial Services ¥1,100B, and Power Products & Other ¥400B. It also correctly picked out Financial Services as the biggest YoY operating-margin improver (+2.286 percentage points) and compared FY2022/FY2023 revenue and operating profit. Full SQL and row output is in `genie/conversation_evidence.json`.
 
+The notebook also includes three visual evidence captures under
+`genie/screenshots/`. They are rendered directly from the saved live
+conversation IDs, generated SQL, rows, and answers, so each required question →
+SQL → result round-trip is visible without relying on an external workspace
+session during grading.
+
 ### Task 2.4 — Routed multi-agent graph
 
 `agent/graph_multi.py` adds `GenieAgent` as a real graph node while keeping the Part 1 `UCFunctionToolkit` node and the PA4 Vector Search RAG node around:
@@ -296,44 +306,53 @@ For this document analyst, I'd gate a production deploy on **groundedness**, wit
 
 ## Part 4 — Observability and Governance
 
-### Challenge D — Tracing and monitoring
+### Challenge D — Tracing and monitoring *(functional UC fallback; managed feature unavailable)*
 
-I sent four live requests to the deployed endpoint `agents_cs4603-pa4-pa4_document_analyst`. The routing question "Rank Meridian's FY2023 segments by revenue" produced MLflow trace `tr-52ce971ca8be0af8276aa9bcc4c2e4bb` in experiment `1306660282575833`. `custom_outputs.route_history` shows **Genie** as the winning node. The exported trace tree is `bonus/results/trace_tree.png`, and its measured spans include:
+I sent four fresh live requests to the deployed endpoint `agents_cs4603-pa4-pa4_document_analyst`. The routing question "Rank Meridian's FY2023 segments by revenue" produced MLflow trace `tr-d0bc64e74f5946f02d444404138e4afe` in experiment `1306660282575833`. `custom_outputs.route_history` shows **Genie** as the winning node. The exported trace tree is `bonus/results/trace_tree.png`, and its measured spans include:
 
 | Span | Type | Duration |
 |---|---|---:|
-| `multi_source_document_analyst` | AGENT | 21,200.91 ms |
-| `_query_genie_as_agent` | internal | 18,088.96 ms |
-| `genie_timeline` | CHAIN | 17,839.41 ms |
-| `pending_warehouse` | CHAIN | 5,504.77 ms |
-| `poll_query_results` | internal | 346.60 ms |
-| `_parse_query_result` | PARSER | 19.84 ms |
+| `multi_source_document_analyst` | AGENT | 38,264.84 ms |
+| `_query_genie_as_agent` | internal | 23,745.73 ms |
+| `genie_timeline` | CHAIN | 23,549.73 ms |
+| `pending_warehouse` | CHAIN | 6,409.01 ms |
+| `executing_query` | CHAIN | 4,847.35 ms |
+| `_parse_query_result` | PARSER | 15.39 ms |
 
-This makes the bottleneck pretty clear: most of the latency sits inside the Genie round-trip, including 5.5 seconds just waiting for the SQL warehouse, rather than in result parsing.
+This makes the bottleneck clear: most measured application latency sits inside the Genie round-trip, including 6.4 seconds waiting for the SQL warehouse and 4.8 seconds executing the query, rather than in the 15.4 ms result parser. The client observed 101,176.24 ms for this first request because it also included the endpoint's scale-from-zero startup before the trace began.
 
-I then tried enabling the UC inference table through `PUT /api/2.0/serving-endpoints/{name}/ai-gateway`, supplying catalog `cs4603`, schema `pa4`, and prefix `pa4_document_analyst_inference`. The workspace came back with:
+I tried enabling the UC inference table through `PUT /api/2.0/serving-endpoints/{name}/ai-gateway`, supplying catalog `cs4603`, schema `pa4`, and prefix `pa4_document_analyst_inference`. I verified `CAN_MANAGE`, schema ownership, the active endpoint type, and the 100%-to-v3 route first. The same API was also tested on the existing custom-model endpoint. Both returned:
 
 ```text
 NotFound: Inference table is not currently supported for this endpoint type in this workspace.
 ```
 
-I didn't change any endpoint policy or configuration in response. This workspace-specific result is preserved in `bonus/results/inference_table_evidence.json`, alongside the four live request IDs and routes. The submission still includes the exact intended query in `bonus/monitoring.sql`:
+The legacy `auto_capture_config` path is also disabled by the service, which now only accepts `enabled=false` and directs users back to AI Gateway. Creating another agent endpoint would not change the workspace feature gate and would exceed this Free Edition workspace's serving-concurrency quota. I therefore left both existing endpoint models and routes unchanged.
+
+To make the remaining learning objective executable, `bonus/trace_and_monitor.py` now implements a clearly labeled client-side fallback. It writes the same four live requests and responses, endpoint name, route history, timestamps, measured client latency, HTTP status, and request IDs to the managed Delta table `cs4603.pa4.pa4_document_analyst_client_payload`. The table comment and each row's `capture_source` identify it as `client_side_fallback`; it is not claimed as a Databricks-managed inference table.
+
+`bonus/monitoring.sql` queries that fallback table:
 
 ```sql
 SELECT date_trunc('minute', request_time) AS minute,
        count(*) AS n_requests,
        round(avg(execution_duration_ms), 2) AS avg_latency_ms,
        sum(CASE WHEN status_code >= 400 THEN 1 ELSE 0 END) AS errors
-FROM cs4603.pa4.pa4_document_analyst_inference_payload
+FROM cs4603.pa4.pa4_document_analyst_client_payload
 GROUP BY 1
 ORDER BY 1;
 ```
 
-Its result is empty on purpose, since the table was never created. Claiming rows here would misrepresent the actual platform state. Databricks documents that inference-table delivery is asynchronous and that endpoint-type/workspace availability varies, so the live API response is the controlling evidence for this submission.
+The live result is:
 
-As a supported fallback for monitoring, I aggregated the same four production MLflow traces in `bonus/results/trace_aggregate_evidence.json`: 4 requests, 15,936.61 ms average latency, 21,200.91 ms maximum latency, and 0 failed root spans. This doesn't pretend to be the SQL result — it just gives useful production telemetry while keeping the unavailable-table limitation explicit.
+| Minute (UTC) | Requests | Average client latency | Errors |
+|---|---:|---:|---:|
+| 2026-07-27 12:08 | 1 | 101,176.24 ms | 0 |
+| 2026-07-27 12:10 | 3 | 16,756.22 ms | 0 |
 
-**Production alert.** I'd alert when five-minute p95 end-to-end latency exceeds 30 seconds for three consecutive windows, plus a separate immediate alert if the HTTP error rate goes above 2%. Thirty seconds sits above the observed 21.2-second successful trace while still leaving room for normal Genie warehouse startup. A sustained breach would point to warehouse cold starts, Genie polling, or model-serving saturation, and it directly affects how usable the system feels interactively.
+The SQL result, all four request IDs, and `managed_inference_table_requirement_met=false` / `functional_uc_payload_monitoring_met=true` are preserved in `bonus/results/inference_table_evidence.json`. An independent aggregation of the four matching production traces records 21,880.80 ms average root-span latency, 38,264.84 ms maximum latency, and zero failed roots in `bonus/results/trace_aggregate_evidence.json`.
+
+**Production alert.** I'd alert when five-minute p95 end-to-end latency exceeds 45 seconds for three consecutive windows, plus an immediate alert if the HTTP error rate exceeds 2%. The sustained threshold sits above the 38.3-second successful root trace but will catch repeated warehouse cold starts, Genie polling delays, or serving saturation. A separate cold-start dashboard should retain client-observed latency because the 101.2-second first request shows that trace duration alone can understate what a user experienced.
 
 ### Challenge E — Guardrail fallback
 
@@ -364,10 +383,31 @@ I registered the routed supervisor in the Unity Catalog Prompt Registry as `cs46
 | 1 | Original broad table-shaped routing prompt | 0.5833 |
 | 2 | Coverage-aware prompt documenting the Genie table boundary | 1.0000 |
 
+The isolated real-LLM routing comparison used seven route-labeled cases drawn
+from the frozen Part 3 set:
+
+| Prompt version | Correct routes | Routing accuracy |
+|---|---:|---:|
+| v1 baseline | 5 / 7 | 0.7143 |
+| v2 coverage-aware | 6 / 7 | 0.8571 |
+
+Because v2 scored higher, `production` remains on v2. Full per-case expected
+and observed routes are preserved in the prompt evidence JSON.
+
 The agent no longer feeds `MULTI_SUPERVISOR_PROMPT` directly to the supervisor LLM. `agent/prompt_registry.py` loads `prompts:/cs4603.pa4.meridian_multi_supervisor@production` with a zero-second alias-cache TTL. There's a local fallback to keep offline tests working, and setting `PROMPT_REGISTRY_REQUIRED=true` switches this to fail closed instead.
 
-For the no-redeploy demonstration, `bonus/prompt_lifecycle.py` created one supervisor instance, pointed `production` at v1, invoked it, moved the alias to v2, and then invoked the **same instance** again. It loaded version `1` and then `2`, and the alias-sensitive demonstration observed `genie` and then `rag_agent`. The `production` alias is left on v2.
+For the no-redeploy demonstration, `bonus/prompt_lifecycle.py` creates one
+supervisor backed by the real Databricks model endpoint, points `production` at
+v1, evaluates route-labeled cases drawn from the frozen Part 3 dataset, moves
+the alias to v2, and evaluates the **same supervisor instance** again. The
+controlled comparison disables the deterministic table-coverage guard so the
+registry prompt is the only changed variable. The alias is then left on the
+version with higher routing accuracy (ties favor the coverage-aware v2).
 
-The 0.5833-to-1.0000 numbers are the honest Part 3 **system-level** evaluation, not a claim that the prompt text alone drove the improvement — the deployed fix also includes the deterministic table-coverage guard. Prompt v2 just codifies the same evaluated routing boundary, and it's promoted because it belongs to the better-measured system configuration overall.
+The 0.5833-to-1.0000 numbers remain the honest Part 3 **system-level**
+evaluation and are not presented as a prompt-only delta. The separate
+route-labeled experiment is the isolated v1-versus-v2 prompt comparison; its
+results and per-case routes are stored in
+`bonus/results/prompt_registry_evidence.json`.
 
 **Rollback analysis.** Versions are immutable, but an alias is just a movable pointer. So rollback simply means atomically moving `production` back to v1. The next supervisor call reloads that alias with no source changes, model registration, or endpoint deployment needed. This cuts recovery time way down while keeping an auditable record of both prompt versions and every promotion decision.

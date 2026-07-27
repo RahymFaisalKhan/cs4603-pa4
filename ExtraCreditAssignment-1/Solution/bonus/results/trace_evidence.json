@@ -1,5 +1,5 @@
 {
-  "trace_id": "tr-52ce971ca8be0af8276aa9bcc4c2e4bb",
+  "trace_id": "tr-d0bc64e74f5946f02d444404138e4afe",
   "experiment_id": "1306660282575833",
   "endpoint": "agents_cs4603-pa4-pa4_document_analyst",
   "question": "Rank Meridian's FY2023 segments by revenue.",
@@ -11,118 +11,127 @@
       "depth": 0,
       "name": "multi_source_document_analyst",
       "span_type": "AGENT",
-      "duration_ms": 21200.91,
+      "duration_ms": 38264.84,
       "status": "SpanStatusCode.OK",
-      "span_id": "af6a8688501b4f43",
+      "span_id": "181486cf82300a6c",
       "parent_id": null
     },
     {
       "depth": 1,
       "name": "_query_genie_as_agent",
       "span_type": "None",
-      "duration_ms": 18088.96,
+      "duration_ms": 23745.73,
       "status": "SpanStatusCode.OK",
-      "span_id": "7f0b057853c5a329",
-      "parent_id": "af6a8688501b4f43"
+      "span_id": "1477e56a8d23b7e7",
+      "parent_id": "181486cf82300a6c"
     },
     {
       "depth": 2,
       "name": "ask_question",
       "span_type": "None",
-      "duration_ms": 18087.91,
+      "duration_ms": 23744.9,
       "status": "SpanStatusCode.OK",
-      "span_id": "1dc2ea17172a01c1",
-      "parent_id": "7f0b057853c5a329"
+      "span_id": "bbb81f0c02f7b253",
+      "parent_id": "1477e56a8d23b7e7"
     },
     {
       "depth": 3,
       "name": "start_conversation",
       "span_type": "None",
-      "duration_ms": 191.79,
+      "duration_ms": 139.5,
       "status": "SpanStatusCode.OK",
-      "span_id": "f14c0838850ad3ef",
-      "parent_id": "1dc2ea17172a01c1"
+      "span_id": "eb9e0700faa9cda6",
+      "parent_id": "bbb81f0c02f7b253"
     },
     {
       "depth": 3,
       "name": "poll_for_result",
       "span_type": "None",
-      "duration_ms": 17895.56,
+      "duration_ms": 23604.98,
       "status": "SpanStatusCode.OK",
-      "span_id": "255536da83b36cb0",
-      "parent_id": "1dc2ea17172a01c1"
+      "span_id": "d848b3ab6828c166",
+      "parent_id": "bbb81f0c02f7b253"
     },
     {
       "depth": 4,
       "name": "poll_result",
       "span_type": "None",
-      "duration_ms": 17895.07,
+      "duration_ms": 23604.54,
       "status": "SpanStatusCode.OK",
-      "span_id": "fc64fd9709af4f11",
-      "parent_id": "255536da83b36cb0"
+      "span_id": "dc0c4bbca90f7b55",
+      "parent_id": "d848b3ab6828c166"
     },
     {
       "depth": 5,
       "name": "genie_timeline",
       "span_type": "CHAIN",
-      "duration_ms": 17839.41,
+      "duration_ms": 23549.73,
       "status": "SpanStatusCode.OK",
-      "span_id": "5e737d4ba3a0ecd8",
-      "parent_id": "fc64fd9709af4f11"
+      "span_id": "4d403f8868a85999",
+      "parent_id": "dc0c4bbca90f7b55"
     },
     {
       "depth": 6,
-      "name": "filtering_context",
+      "name": "fetching_metadata",
       "span_type": "CHAIN",
-      "duration_ms": 611.33,
+      "duration_ms": 609.6,
       "status": "SpanStatusCode.OK",
-      "span_id": "1f5fc91a91214ead",
-      "parent_id": "5e737d4ba3a0ecd8"
+      "span_id": "3b7fe73b655f7dba",
+      "parent_id": "4d403f8868a85999"
     },
     {
       "depth": 6,
       "name": "asking_ai",
       "span_type": "CHAIN",
-      "duration_ms": 3791.86,
+      "duration_ms": 3735.11,
       "status": "SpanStatusCode.OK",
-      "span_id": "e4344b7437193158",
-      "parent_id": "5e737d4ba3a0ecd8"
+      "span_id": "550f3a885bd10196",
+      "parent_id": "4d403f8868a85999"
     },
     {
       "depth": 6,
       "name": "pending_warehouse",
       "span_type": "CHAIN",
-      "duration_ms": 5504.77,
+      "duration_ms": 6409.01,
       "status": "SpanStatusCode.OK",
-      "span_id": "2b4561c150d52aa4",
-      "parent_id": "5e737d4ba3a0ecd8"
+      "span_id": "f9869f205020d7ec",
+      "parent_id": "4d403f8868a85999"
+    },
+    {
+      "depth": 6,
+      "name": "executing_query",
+      "span_type": "CHAIN",
+      "duration_ms": 4847.35,
+      "status": "SpanStatusCode.OK",
+      "span_id": "b00d772b025bd649",
+      "parent_id": "4d403f8868a85999"
     },
     {
       "depth": 6,
       "name": "asking_ai",
       "span_type": "CHAIN",
-      "duration_ms": 7394.48,
+      "duration_ms": 7427.39,
       "status": "SpanStatusCode.OK",
-      "span_id": "30917e43776cc861",
-      "parent_id": "5e737d4ba3a0ecd8"
+      "span_id": "393a60111c843792",
+      "parent_id": "4d403f8868a85999"
     },
     {
       "depth": 6,
       "name": "poll_query_results",
       "span_type": "None",
-      "duration_ms": 346.6,
+      "duration_ms": 418.83,
       "status": "SpanStatusCode.OK",
-      "span_id": "b410a891dc319044",
-      "parent_id": "5e737d4ba3a0ecd8"
+      "span_id": "5ff0893f57662135",
+      "parent_id": "4d403f8868a85999"
     },
     {
       "depth": 7,
       "name": "_parse_query_result",
       "span_type": "PARSER",
-      "duration_ms": 19.84,
+      "duration_ms": 15.39,
       "status": "SpanStatusCode.OK",
-      "span_id": "d676a780cafef78c",
-      "parent_id": "b410a891dc319044"
+      "span_id": "60d60b9bfd7e5839",
+      "parent_id": "5ff0893f57662135"
     }
   ]
 }

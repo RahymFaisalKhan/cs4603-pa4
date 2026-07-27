@@ -102,15 +102,20 @@ def make_multi_planner(llm):
     return planner
 
 
-def make_multi_supervisor(llm):
-    """Route each planned step to Genie, RAG, or governed UC functions."""
+def make_multi_supervisor(llm, *, coverage_guard: bool = True):
+    """Route each planned step to Genie, RAG, or governed UC functions.
+
+    ``coverage_guard=False`` is reserved for the Part 4 prompt-version
+    experiment, where the two registry prompts must be compared without the
+    deterministic Part 3 safeguard masking their routing behavior.
+    """
 
     def supervisor(state: AnalystState) -> dict:
         index = state.get("current_step_index", 0)
         plan = state.get("plan", [])
         if index >= len(plan):
             return {"next_agent": SYNTH}
-        if coverage_route := _table_coverage_route(plan[index]):
+        if coverage_guard and (coverage_route := _table_coverage_route(plan[index])):
             return {
                 "next_agent": coverage_route,
                 "route_history": [

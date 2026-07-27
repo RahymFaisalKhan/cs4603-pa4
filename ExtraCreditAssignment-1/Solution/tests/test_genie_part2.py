@@ -90,6 +90,21 @@ def test_part3_table_coverage_guard_routes_unsupported_domains_to_rag():
     assert _table_coverage_route("Query FY2023 operating profit.") is None
 
 
+def test_prompt_experiment_can_disable_deterministic_coverage_guard():
+    supervisor = make_multi_supervisor(
+        RoutingLLM(GENIE),
+        coverage_guard=False,
+    )
+    result = supervisor(
+        {
+            "plan": ["Retrieve FY2024 forecast revenue."],
+            "current_step_index": 0,
+            "route_history": [],
+        }
+    )
+    assert result["next_agent"] == GENIE
+
+
 def test_ranking_request_stays_one_structured_step():
     question = "Rank Meridian's FY2023 segments by revenue."
     plan = ["Query all segment revenue", "Rank the returned rows"]

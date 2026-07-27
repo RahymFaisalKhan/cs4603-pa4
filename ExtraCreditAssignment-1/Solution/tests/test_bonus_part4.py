@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from bonus.guardrails import RollingWindowGuard, rejection_message
+from bonus.trace_and_monitor import _sql_string
 
 
 def test_guard_blocks_email_without_counting_it_as_an_allowed_call():
@@ -37,3 +38,7 @@ def test_prompt_loader_uses_constant_when_registry_uri_is_unset(monkeypatch):
         MULTI_SUPERVISOR_PROMPT,
         None,
     )
+
+
+def test_client_payload_sql_string_escapes_single_quotes():
+    assert _sql_string("Meridian's revenue") == "'Meridian''s revenue'"

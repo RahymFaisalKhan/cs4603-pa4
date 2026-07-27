@@ -26,7 +26,7 @@ def main() -> None:
     configure_databricks_auth(args.profile)
     mlflow.set_tracking_uri("databricks")
     traces = mlflow.search_traces(
-        experiment_ids=[EXPERIMENT_ID],
+        locations=[EXPERIMENT_ID],
         max_results=100,
         return_type="list",
         include_spans=True,
@@ -59,7 +59,10 @@ def main() -> None:
     durations = [row["duration_ms"] for row in rows]
     aggregate = {
         "source": "MLflow production traces",
-        "reason": "Workspace rejected inference tables for this agent endpoint type.",
+        "reason": (
+            "Independent trace aggregate accompanying the client-side Unity "
+            "Catalog payload-log fallback."
+        ),
         "experiment_id": EXPERIMENT_ID,
         "n_requests": len(rows),
         "avg_latency_ms": (

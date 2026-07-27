@@ -1,42 +1,77 @@
 {
   "endpoint": "agents_cs4603-pa4-pa4_document_analyst",
-  "inference_table": "cs4603.pa4.pa4_document_analyst_inference_payload",
+  "managed_inference_table": "cs4603.pa4.pa4_document_analyst_inference_payload",
+  "aggregate_table": "cs4603.pa4.pa4_document_analyst_client_payload",
+  "capture_mode": "client_side_uc_delta_fallback",
+  "managed_inference_table_requirement_met": false,
+  "functional_uc_payload_monitoring_met": true,
   "configuration": null,
   "configuration_error": "NotFound: Inference table is not currently supported for this endpoint type in this workspace.",
   "traffic": [
     {
-      "client_request_id": "part4-b5e61214-a3ad-4620-be67-c87fc8259c4a",
+      "client_request_id": "part4-17571c51-2f2b-4108-ba64-3725bc68bb1c",
       "question": "Rank Meridian's FY2023 segments by revenue.",
       "route_history": [
         "genie"
-      ]
+      ],
+      "request_time": "2026-07-27T12:08:46.088526+00:00",
+      "execution_duration_ms": 101176.24,
+      "status_code": 200
     },
     {
-      "client_request_id": "part4-9aff18ba-e41e-46f8-9b1b-ac686b3c9dd9",
+      "client_request_id": "part4-b84b75d5-8388-4d28-91fc-746d1fdf6351",
       "question": "What was Meridian's FY2023 net income?",
       "route_history": [
         "genie"
-      ]
+      ],
+      "request_time": "2026-07-27T12:10:27.265207+00:00",
+      "execution_duration_ms": 15440.11,
+      "status_code": 200
     },
     {
-      "client_request_id": "part4-53e376e8-ea5c-43c9-ad9a-0271843ae950",
+      "client_request_id": "part4-a1f9ec55-03b0-4bc2-a703-d9cab0e8b8cc",
       "question": "What strategic risk could affect Meridian's profitability?",
       "route_history": [
         "rag_agent",
+        "rag_agent",
         "rag_agent"
-      ]
+      ],
+      "request_time": "2026-07-27T12:10:42.705509+00:00",
+      "execution_duration_ms": 13721.57,
+      "status_code": 200
     },
     {
-      "client_request_id": "part4-4a63b83d-aedf-497e-8ef4-043ee35b96c3",
+      "client_request_id": "part4-a758fa03-40bd-43f5-a59f-ed891c1db2d0",
       "question": "Which FY2023 segment had the highest operating margin?",
       "route_history": [
         "genie"
-      ]
+      ],
+      "request_time": "2026-07-27T12:10:56.427204+00:00",
+      "execution_duration_ms": 21106.98,
+      "status_code": 200
     }
   ],
-  "aggregate_query": "SELECT date_trunc('minute', request_time) AS minute,\n       count(*) AS n_requests,\n       round(avg(execution_duration_ms), 2) AS avg_latency_ms,\n       sum(CASE WHEN status_code >= 400 THEN 1 ELSE 0 END) AS errors\nFROM cs4603.pa4.pa4_document_analyst_inference_payload\nGROUP BY 1\nORDER BY 1",
-  "aggregate_columns": [],
-  "aggregate_rows": [],
-  "query_note": "The workspace rejected inference tables for this agent endpoint type, so the documented SQL could not produce rows.",
+  "aggregate_query": "SELECT date_trunc('minute', request_time) AS minute,\n       count(*) AS n_requests,\n       round(avg(execution_duration_ms), 2) AS avg_latency_ms,\n       sum(CASE WHEN status_code >= 400 THEN 1 ELSE 0 END) AS errors\nFROM cs4603.pa4.pa4_document_analyst_client_payload\nGROUP BY 1\nORDER BY 1",
+  "aggregate_columns": [
+    "minute",
+    "n_requests",
+    "avg_latency_ms",
+    "errors"
+  ],
+  "aggregate_rows": [
+    [
+      "2026-07-27T12:08:00.000Z",
+      "1",
+      "101176.24",
+      "0"
+    ],
+    [
+      "2026-07-27T12:10:00.000Z",
+      "3",
+      "16756.22",
+      "0"
+    ]
+  ],
+  "query_note": "The workspace rejected Databricks-managed inference tables. These aggregate rows come from an explicitly labeled client-side payload log in a Unity Catalog Delta table; they are not presented as managed inference-table rows.",
   "last_error": null
 }

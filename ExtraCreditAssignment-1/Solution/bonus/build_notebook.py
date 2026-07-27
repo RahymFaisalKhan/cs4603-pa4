@@ -89,6 +89,15 @@ def main() -> None:
         for span in trace["spans"]
     ]
     inference_summary = {
+        "capture_mode": inference["capture_mode"],
+        "managed_inference_table": inference["managed_inference_table"],
+        "aggregate_table": inference["aggregate_table"],
+        "managed_inference_table_requirement_met": inference[
+            "managed_inference_table_requirement_met"
+        ],
+        "functional_uc_payload_monitoring_met": inference[
+            "functional_uc_payload_monitoring_met"
+        ],
         "configuration": inference["configuration"],
         "configuration_error": inference["configuration_error"],
         "live_request_routes": [
@@ -110,11 +119,12 @@ def main() -> None:
             _markdown(
                 """# Part 4 — Observability and Governance
 
-I attempted Challenges D, E, and F. Live MLflow tracing and Prompt Registry
-operations succeeded. This workspace rejected inference-table enablement for
-its agent endpoint type, so the notebook preserves the exact error and intended
-SQL without inventing rows. Challenge E therefore uses the assignment's
-code-level fallback."""
+Challenge D includes the live trace and a working aggregate SQL result over an
+explicitly labeled client-side Unity Catalog payload-log fallback. The exact
+Databricks-managed inference-table feature was rejected by this workspace and
+is not misrepresented as complete. Challenges E and F are completed using the
+permitted code-level guardrail fallback and a real-LLM prompt-routing
+comparison, respectively."""
             ),
             _code(
                 """trace = json.loads(
@@ -137,11 +147,12 @@ code-level fallback."""
             ),
             _image_cell(RESULTS / "trace_tree.png", 20),
             _markdown(
-                """The ranking query was handled by **Genie**. The 21.2 s root
-span spent 18.1 s in the Genie call, including 5.5 s in
-`pending_warehouse`; parsing took only 19.8 ms. I would alert when five-minute
-p95 latency exceeds 30 s for three windows, or immediately when HTTP errors
-exceed 2%."""
+                """The ranking query was handled by **Genie**. The 38.3 s root
+span spent 23.7 s in the Genie call, including 6.4 s in
+`pending_warehouse`; parsing took only 15.4 ms. The client measured 101.2 s for
+the first request because endpoint scale-from-zero preceded the trace. I would
+alert when five-minute p95 latency exceeds 45 s for three windows, or
+immediately when HTTP errors exceed 2%."""
             ),
             _code(
                 """inference = json.loads(
@@ -152,12 +163,14 @@ inference""",
                 21,
             ),
             _markdown(
-                """The API returned `Inference table is not currently supported
-for this endpoint type in this workspace.` Therefore the documented aggregate
-SQL has no result rows. As a supported fallback, the same four production
-MLflow traces aggregate to 15,936.61 ms average latency, 21,200.91 ms maximum
-latency, and zero errors. This is a platform capability result, not an agent
-failure, and is reported honestly."""
+                """The AI Gateway API returned `Inference table is not currently
+supported for this endpoint type in this workspace.` The legacy capture API is
+also disabled. The evidence therefore keeps
+`managed_inference_table_requirement_met=false`, while the explicitly labeled
+client-side UC Delta payload log produced real aggregate SQL rows and sets
+`functional_uc_payload_monitoring_met=true`. The same four production MLflow
+traces independently aggregate to 21,880.80 ms average root-span latency,
+38,264.84 ms maximum latency, and zero errors."""
             ),
             _code(
                 """guardrail_evidence = json.loads(
@@ -185,11 +198,12 @@ prompt_evidence""",
             ),
             _markdown(
                 """Prompt versions are immutable and `production` is a movable
-pointer. The same running supervisor loaded v1, then v2 after alias promotion,
-without rebuild or redeploy. Rollback is the inverse alias move and takes
-effect on its next zero-TTL load. The 0.5833→1.0000 correctness comparison is
-the honest Part 3 system-level measurement; it is not attributed to prompt
-text alone because the deterministic coverage guard was also present."""
+pointer. The same running supervisor, backed by the real Databricks model
+endpoint, loaded v1 and then v2 after an alias move without rebuild or
+redeploy. The prompt-only routing comparison disables the deterministic
+coverage guard so the registry prompt is the sole changed variable. The
+separate 0.5833→1.0000 figures remain explicitly labeled as system-level Part 3
+measurements and are not misattributed to prompt text alone."""
             ),
         ]
     )

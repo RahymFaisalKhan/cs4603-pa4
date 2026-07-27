@@ -5,7 +5,9 @@ from __future__ import annotations
 import argparse
 import json
 import time
+from datetime import UTC, datetime
 from pathlib import Path
+from time import perf_counter
 from typing import Any
 from uuid import uuid4
 
@@ -22,6 +24,7 @@ RESULTS = ROOT / "bonus" / "results"
 ENDPOINT = "agents_cs4603-pa4-pa4_document_analyst"
 EXPERIMENT_ID = "1306660282575833"
 TABLE = "cs4603.pa4.pa4_document_analyst_inference_payload"
+CLIENT_CAPTURE_TABLE = "cs4603.pa4.pa4_document_analyst_client_payload"
 TRACE_QUESTION = "Rank Meridian's FY2023 segments by revenue."
 TRAFFIC = [
     TRACE_QUESTION,
@@ -33,6 +36,8 @@ TRAFFIC = [
 
 def _invoke(client: WorkspaceClient, endpoint: str, question: str) -> dict[str, Any]:
     request_id = f"part4-{uuid4()}"
+    request_time = datetime.now(UTC)
+    started = perf_counter()
     response = client.api_client.do(
         "POST",
         f"/serving-endpoints/{endpoint}/invocations",
@@ -43,10 +48,14 @@ def _invoke(client: WorkspaceClient, endpoint: str, question: str) -> dict[str, 
             ],
         },
     )
+    duration_ms = (perf_counter() - started) * 1000
     return {
         "client_request_id": request_id,
+        "request_time": request_time.isoformat(),
         "question": question,
         "response": _prediction_from_response(response),
+        "execution_duration_ms": round(duration_ms, 2),
+        "status_code": 200,
     }
 
 
@@ -82,7 +91,7 @@ def _span_rows(trace) -> list[dict[str, Any]]:
 def _find_trace(question: str, attempts: int = 12):
     for _ in range(attempts):
         traces = mlflow.search_traces(
-            experiment_ids=[EXPERIMENT_ID],
+            locations=[EXPERIMENT_ID],
             max_results=30,
             return_type="list",
             include_spans=True,
@@ -159,6 +168,74 @@ ORDER BY 1
     return execute_sql(client, warehouse_id, statement)
 
 
+def _sql_string(value: Any) -> str:
+    text = str(value).replace("'", "''")
+    return f"'{text}'"
+
+
+def _capture_traffic_in_uc(
+    client: WorkspaceClient,
+    warehouse_id: str,
+    endpoint: str,
+    traffic: list[dict[str, Any]],
+    table: str = CLIENT_CAPTURE_TABLE,
+) -> None:
+    """Persist an explicitly labeled client-side fallback payload log."""
+    execute_sql(
+        client,
+        warehouse_id,
+        f"""
+CREATE TABLE IF NOT EXISTS {table} (
+  request_time TIMESTAMP,
+  client_request_id STRING,
+  endpoint_name STRING,
+  request STRING,
+  response STRING,
+  execution_duration_ms DOUBLE,
+  status_code INT,
+  route_history STRING,
+  capture_source STRING
+)
+USING DELTA
+COMMENT 'Client-side Part 4 payload log; not a Databricks-managed inference table'
+""".strip(),
+    )
+    values = []
+    for item in traffic:
+        route = (
+            item.get("response", {})
+            .get("custom_outputs", {})
+            .get("route_history", [])
+        )
+        values.append(
+            "("
+            + ", ".join(
+                [
+                    f"TIMESTAMP {_sql_string(item['request_time'])}",
+                    _sql_string(item["client_request_id"]),
+                    _sql_string(endpoint),
+                    _sql_string(json.dumps({"question": item["question"]})),
+                    _sql_string(json.dumps(item["response"], default=str)),
+                    str(item["execution_duration_ms"]),
+                    str(item["status_code"]),
+                    _sql_string(json.dumps(route)),
+                    _sql_string("client_side_fallback"),
+                ]
+            )
+            + ")"
+        )
+    joined_values = ",\n".join(values)
+    execute_sql(
+        client,
+        warehouse_id,
+        f"""
+INSERT INTO {table}
+VALUES
+{joined_values}
+""".strip(),
+    )
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--profile", default="rahym-ec1")
@@ -219,8 +296,28 @@ def main() -> None:
 
     inference_result = None
     inference_error = None
-    if not gateway_error:
-        warehouse_id = _warehouse_id(client, args.warehouse_id)
+    capture_mode = "databricks_managed_inference_table"
+    aggregate_table = TABLE
+    warehouse_id = _warehouse_id(client, args.warehouse_id)
+    if gateway_error:
+        capture_mode = "client_side_uc_delta_fallback"
+        aggregate_table = CLIENT_CAPTURE_TABLE
+        try:
+            _capture_traffic_in_uc(
+                client,
+                warehouse_id,
+                args.endpoint,
+                traffic,
+                aggregate_table,
+            )
+            inference_result = _aggregate_sql(
+                client,
+                warehouse_id,
+                aggregate_table,
+            )
+        except Exception as exc:
+            inference_error = str(exc)
+    else:
         for _ in range(6):
             try:
                 inference_result = _aggregate_sql(client, warehouse_id, TABLE)
@@ -235,13 +332,19 @@ SELECT date_trunc('minute', request_time) AS minute,
        count(*) AS n_requests,
        round(avg(execution_duration_ms), 2) AS avg_latency_ms,
        sum(CASE WHEN status_code >= 400 THEN 1 ELSE 0 END) AS errors
-FROM {TABLE}
+FROM {aggregate_table}
 GROUP BY 1
 ORDER BY 1
 """.strip()
     evidence = {
         "endpoint": args.endpoint,
-        "inference_table": TABLE,
+        "managed_inference_table": TABLE,
+        "aggregate_table": aggregate_table,
+        "capture_mode": capture_mode,
+        "managed_inference_table_requirement_met": not gateway_error,
+        "functional_uc_payload_monitoring_met": bool(
+            inference_result and inference_result.rows
+        ),
         "configuration": gateway_response,
         "configuration_error": gateway_error,
         "traffic": [
@@ -253,6 +356,9 @@ ORDER BY 1
                     .get("custom_outputs", {})
                     .get("route_history", [])
                 ),
+                "request_time": item["request_time"],
+                "execution_duration_ms": item["execution_duration_ms"],
+                "status_code": item["status_code"],
             }
             for item in traffic
         ],
@@ -262,13 +368,22 @@ ORDER BY 1
         "aggregate_columns": inference_result.columns if inference_result else [],
         "aggregate_rows": inference_result.rows if inference_result else [],
         "query_note": (
-            None
-            if inference_result and inference_result.rows
+            (
+                "The workspace rejected Databricks-managed inference tables. "
+                "These aggregate rows come from an explicitly labeled client-side "
+                "payload log in a Unity Catalog Delta table; they are not presented "
+                "as managed inference-table rows."
+            )
+            if gateway_error and inference_result and inference_result.rows
             else (
-                "The workspace rejected inference tables for this agent endpoint "
-                "type, so the documented SQL could not produce rows."
-                if gateway_error
-                else "Inference delivery is asynchronous; re-run with --skip-enable."
+                None
+                if inference_result and inference_result.rows
+                else (
+                    "The workspace rejected managed inference tables and the "
+                    "client-side UC fallback did not produce rows."
+                    if gateway_error
+                    else "Inference delivery is asynchronous; re-run with --skip-enable."
+                )
             )
         ),
         "last_error": inference_error,

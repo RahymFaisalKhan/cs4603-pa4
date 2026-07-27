@@ -79,8 +79,8 @@ def main() -> None:
     evidence = {
         "implementation": "code_level_fallback",
         "reason": (
-            "Databricks agent endpoints support inference tables but do not "
-            "support AI Gateway rate-limit or AI Guardrail policies."
+            "AI Gateway rate-limit and AI Guardrail policies were unavailable "
+            "for this agent endpoint in the workspace."
         ),
         "configuration": {
             "max_requests_per_user_per_rolling_minute": 2,

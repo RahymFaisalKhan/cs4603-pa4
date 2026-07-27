@@ -189,7 +189,7 @@ system's audit purpose. A strict 0.90 groundedness gate would still block this
 model at 0.75 despite its 1.00 post-fix correctness, which is the honest
 production conclusion.
 
-The complete analysis is provided in [`analysis.md`](analysis.md)."""
+The complete analysis is provided in [`writeup.md`](writeup.md)."""
             ),
         ]
     )

@@ -18,9 +18,122 @@
     "loaded_after_promotion": "2",
     "coverage_boundary_present": true,
     "same_supervisor_instance": true,
-    "route_observed_with_v1": "genie",
-    "route_observed_with_v2": "rag_agent"
+    "real_llm_endpoint": "databricks-meta-llama-3-3-70b-instruct",
+    "deterministic_coverage_guard_enabled": false,
+    "baseline_prompt_routing_eval": {
+      "correct": 5,
+      "total": 7,
+      "accuracy": 0.7142857142857143,
+      "rows": [
+        {
+          "id": "retrieval_fy2024_guidance",
+          "step": "Retrieve Meridian's FY2024 forecast revenue and operating profit.",
+          "expected_route": "rag_agent",
+          "observed_route": "genie",
+          "correct": false
+        },
+        {
+          "id": "retrieval_rnd_priorities",
+          "step": "Find the three R&D priorities described by management.",
+          "expected_route": "rag_agent",
+          "observed_route": "rag_agent",
+          "correct": true
+        },
+        {
+          "id": "structured_segment_rank",
+          "step": "Rank Meridian's FY2023 segments by revenue.",
+          "expected_route": "genie",
+          "observed_route": "genie",
+          "correct": true
+        },
+        {
+          "id": "structured_margin_leader",
+          "step": "Query which segment had the highest FY2023 operating margin.",
+          "expected_route": "genie",
+          "observed_route": "genie",
+          "correct": true
+        },
+        {
+          "id": "structured_income_growth",
+          "step": "Calculate FY2022-to-FY2023 net-income growth from the income statement.",
+          "expected_route": "genie",
+          "observed_route": "genie",
+          "correct": true
+        },
+        {
+          "id": "retrieval_risk_effect",
+          "step": "Explain how a stronger yen affects Meridian according to the risk factors.",
+          "expected_route": "rag_agent",
+          "observed_route": "rag_agent",
+          "correct": true
+        },
+        {
+          "id": "not_in_document_ceo_pay",
+          "step": "Find the CEO's FY2023 executive compensation in the annual report.",
+          "expected_route": "rag_agent",
+          "observed_route": "genie",
+          "correct": false
+        }
+      ]
+    },
+    "coverage_prompt_routing_eval": {
+      "correct": 6,
+      "total": 7,
+      "accuracy": 0.8571428571428571,
+      "rows": [
+        {
+          "id": "retrieval_fy2024_guidance",
+          "step": "Retrieve Meridian's FY2024 forecast revenue and operating profit.",
+          "expected_route": "rag_agent",
+          "observed_route": "genie",
+          "correct": false
+        },
+        {
+          "id": "retrieval_rnd_priorities",
+          "step": "Find the three R&D priorities described by management.",
+          "expected_route": "rag_agent",
+          "observed_route": "rag_agent",
+          "correct": true
+        },
+        {
+          "id": "structured_segment_rank",
+          "step": "Rank Meridian's FY2023 segments by revenue.",
+          "expected_route": "genie",
+          "observed_route": "genie",
+          "correct": true
+        },
+        {
+          "id": "structured_margin_leader",
+          "step": "Query which segment had the highest FY2023 operating margin.",
+          "expected_route": "genie",
+          "observed_route": "genie",
+          "correct": true
+        },
+        {
+          "id": "structured_income_growth",
+          "step": "Calculate FY2022-to-FY2023 net-income growth from the income statement.",
+          "expected_route": "genie",
+          "observed_route": "genie",
+          "correct": true
+        },
+        {
+          "id": "retrieval_risk_effect",
+          "step": "Explain how a stronger yen affects Meridian according to the risk factors.",
+          "expected_route": "rag_agent",
+          "observed_route": "rag_agent",
+          "correct": true
+        },
+        {
+          "id": "not_in_document_ceo_pay",
+          "step": "Find the CEO's FY2023 executive compensation in the annual report.",
+          "expected_route": "rag_agent",
+          "observed_route": "rag_agent",
+          "correct": true
+        }
+      ]
+    }
   },
   "production_alias_version": "2",
-  "selection_rule": "Promote the version associated with higher frozen-set correctness."
+  "production_alias_role": "coverage-aware",
+  "selection_rule": "Promote the prompt with higher routing accuracy on route-labeled cases drawn from the frozen Part 3 dataset; ties favor the coverage-aware version."
 }

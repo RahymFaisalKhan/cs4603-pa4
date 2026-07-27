@@ -1,7 +1,7 @@
 {
   "label": "before",
   "endpoint": "agents_cs4603-pa4-pa4_document_analyst",
-  "dataset": "/Users/RahymFaisal/Downloads/27100057_pa4/ExtraCreditAssignment-1/part-3/eval/eval_dataset.jsonl",
+  "dataset": "eval/eval_dataset.jsonl",
   "mlflow_run_id": "c40d62927c5a43fc9e646b92540809d1",
   "metrics": {
     "relevance_to_query/mean": 1.0,

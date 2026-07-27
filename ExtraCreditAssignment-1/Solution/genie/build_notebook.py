@@ -86,7 +86,7 @@ def main() -> None:
         "This notebook presents the implementation and captured evidence for all attempted "
         "parts. Concise analysis summaries are included alongside the relevant results; "
         "the complete analysis and discussion are available in "
-        "[`analysis.md`](analysis.md)."
+        "[`writeup.md`](writeup.md)."
     )
     notebook.cells[6].source = notebook.cells[6].source.replace(
         "](catalog_explorer.png)",
@@ -169,6 +169,15 @@ def main() -> None:
                 _conversation_output(conversations),
             ),
             nbformat.v4.new_markdown_cell(
+                "### 9.1 Visual captures of all three validated conversations\n\n"
+                "These reproducible evidence images are rendered directly from the saved "
+                "live Genie conversation IDs, generated SQL, result rows, and answers in "
+                "`genie/conversation_evidence.json`.\n\n"
+                "![Genie question 1](genie/screenshots/genie_question_1.png)\n\n"
+                "![Genie question 2](genie/screenshots/genie_question_2.png)\n\n"
+                "![Genie question 3](genie/screenshots/genie_question_3.png)"
+            ),
+            nbformat.v4.new_markdown_cell(
                 "### 10. Routed graph verification\n\n"
                 "The contrasting questions prove structured questions route to Genie and "
                 "qualitative questions route to RAG. Generated SQL/rows and RAG citations "
@@ -218,7 +227,7 @@ def main() -> None:
                 "table-coverage routing boundary reduce these failures. Unity Catalog "
                 "also provides centralized permissions, discoverability, and lineage "
                 "that would be weaker if the values existed only in document chunks.\n\n"
-                "The complete analysis is provided in [`analysis.md`](analysis.md)."
+                "The complete analysis is provided in [`writeup.md`](writeup.md)."
             ),
         ]
     )
